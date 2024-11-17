@@ -3,11 +3,6 @@ import 'package:movietrack/screens/register_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:movietrack/pages/home_screen.dart';
 import 'package:movietrack/models/user.dart';
-import 'package:movietrack/services/auth_services.dart';
-import 'package:http/http.dart' as http;
-import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:movietrack/utils/session.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -19,8 +14,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
-  final SessionManager _sessionManager = SessionManager();
   bool _isLoading = false;
 
   @override
@@ -28,23 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkLoginStatus();
-  }
-
-  Future<void> _checkLoginStatus() async {
-    final token = await _sessionManager.getToken();
-    if (token != null) {
-      // Jika token ditemukan, arahkan ke HomeScreen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    }
   }
 
   void _login() async {
@@ -66,8 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final user = User(username: username, password: password);
-    final errorMessage = await _authService.login(user);
+    final errorMessage = await User.login(username, password);
 
     if (errorMessage == null) {
       Navigator.pushReplacement(

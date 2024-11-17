@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/screens/login_screen.dart';
+import 'package:movietrack/pages/home_screen.dart';
+import 'package:movietrack/pages/admin/home_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:movietrack/utils/session.dart';
 
@@ -10,15 +12,13 @@ void main() {
 class MainApp extends StatelessWidget {
   const MainApp({Key? key}) : super(key: key);
 
-  Future<void> _logout(BuildContext context) async {
+  Future<Map<String, dynamic>> _checkLoginStatus() async {
     final sessionManager = SessionManager();
-    await sessionManager.clearSession();
-
-    // Kembali ke LoginScreen setelah logout
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+    final token = await sessionManager.getToken();
+    
+    return {
+      'token': token
+    };
   }
 
   @override
@@ -30,7 +30,20 @@ class MainApp extends StatelessWidget {
         primaryColor: const Color(0xFF4F378B),
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
-      home: const LoginScreen(),
+      home: FutureBuilder<Map<String, dynamic>>(
+        future: _checkLoginStatus(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          } else if (snapshot.hasData && snapshot.data!['token'] != null) {
+              return const HomeScreen();
+          } else {
+              return const LoginScreen();
+          }
+        },
+      ),
     );
   }
 }
