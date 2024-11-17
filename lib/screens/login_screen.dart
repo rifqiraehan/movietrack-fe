@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:movietrack/screens/register_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:movietrack/pages/user/home_screen.dart';
+import 'package:movietrack/pages/admin/home_page.dart';
 import 'package:movietrack/models/user.dart';
+import 'package:movietrack/utils/session.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -45,10 +47,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final errorMessage = await User.login(username, password);
 
     if (errorMessage == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      final sessionManager = SessionManager();
+      final isAdmin = await sessionManager.isAdmin();
+
+      if (isAdmin) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     } else {
       setState(() {
         _isLoading = false;

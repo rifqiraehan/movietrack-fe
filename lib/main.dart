@@ -15,10 +15,8 @@ class MainApp extends StatelessWidget {
   Future<Map<String, dynamic>> _checkLoginStatus() async {
     final sessionManager = SessionManager();
     final token = await sessionManager.getToken();
-
-    return {
-      'token': token
-    };
+    final isAdmin = await sessionManager.isAdmin();
+    return {'token': token, 'isAdmin': isAdmin};
   }
 
   @override
@@ -38,9 +36,13 @@ class MainApp extends StatelessWidget {
               body: Center(child: CircularProgressIndicator()),
             );
           } else if (snapshot.hasData && snapshot.data!['token'] != null) {
+            if (snapshot.data!['isAdmin'] == true) {
+              return const AdminHomeScreen();
+            } else {
               return const HomeScreen();
+            }
           } else {
-              return const LoginScreen();
+            return const LoginScreen();
           }
         },
       ),

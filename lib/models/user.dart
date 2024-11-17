@@ -8,8 +8,9 @@ class User {
   final String username;
   final String email;
   final String password;
+  final bool isAdmin;
 
-  User({required this.username, required this.email, required this.password});
+  User({required this.username, required this.email, required this.password, this.isAdmin = false});
 
   // Convert to JSON (untuk dikirim ke API)
   Map<String, dynamic> toJson() {
@@ -26,6 +27,7 @@ class User {
       username: json['username'],
       email: json['email'],
       password: json['password'],
+      isAdmin: json['is_admin'] == 1,
     );
   }
 
@@ -58,9 +60,10 @@ class User {
         final token = responseData['token'];
         final userId = responseData['id'];
         final username = responseData['username'];
+        final isAdmin = responseData['is_admin'] == 1;
 
         // Simpan sesi pengguna
-        await sessionManager.saveSession(token, userId, username);
+        await sessionManager.saveSession(token, userId, username, isAdmin);
 
         logger.i("Login success: ${response.body}");
         return null; // Jika berhasil login
