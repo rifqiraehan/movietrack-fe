@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/screens/register_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:movietrack/pages/home_screen.dart';
+import 'package:movietrack/pages/user/home_screen.dart';
 import 'package:movietrack/models/user.dart';
 
 class LoginScreen extends StatefulWidget {

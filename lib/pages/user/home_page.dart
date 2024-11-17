@@ -23,6 +23,13 @@ class HomePage extends StatelessWidget {
           username: "cashtoria",
           date: "28 Sept 2024",
         ),
+        ReviewCard(
+          title: "Kimi no Suizou wo Tabetai",
+          reviewText: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde alias magni ipsa omnis nemo deserunt illo, ratione sed sapiente veritatis corporis...",
+          reviewerImage: "https://via.placeholder.com/150",
+          username: "akebikomichi",
+          date: "18 Nov 2024",
+        ),
       ],
     );
   }

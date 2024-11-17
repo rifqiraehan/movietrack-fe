@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/screens/login_screen.dart';
-import 'package:movietrack/pages/home_screen.dart';
+import 'package:movietrack/pages/user/home_screen.dart';
 import 'package:movietrack/pages/admin/home_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:movietrack/utils/session.dart';
