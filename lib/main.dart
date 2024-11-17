@@ -15,7 +15,7 @@ class MainApp extends StatelessWidget {
   Future<Map<String, dynamic>> _checkLoginStatus() async {
     final sessionManager = SessionManager();
     final token = await sessionManager.getToken();
-    
+
     return {
       'token': token
     };

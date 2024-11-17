@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:movietrack/utils/session.dart';
 import 'package:logger/logger.dart';
-import 'package:movietrack/services/auth_services.dart';
+import 'package:movietrack/utils/config.dart';
 
 class User {
   final String username;
