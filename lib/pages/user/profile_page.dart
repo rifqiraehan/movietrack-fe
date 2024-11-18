@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/screens/login_screen.dart';
 import 'package:movietrack/utils/session.dart';
+import 'package:movietrack/models/user.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late Future<User?> _userProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    _userProfile = User.getUserProfile();
+  }
 
   Future<void> _logout(BuildContext context) async {
     final sessionManager = SessionManager();
@@ -33,11 +47,101 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(
-        child: Text(
-          "Profile Page",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+      body: FutureBuilder<User?>(
+        future: _userProfile,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text("Failed to load profile"));
+          } else if (snapshot.hasData) {
+            final user = snapshot.data!;
+            final Map<String, int> stats = {
+              "Watching": 3,
+              "Completed": 4,
+              "Dropped": 0,
+              "Plan to Watch": 6,
+            };
+
+            return Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    // Profile Picture
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage:
+                          user.profilePicture.isNotEmpty ? NetworkImage(user.profilePicture) : null,
+                      child: user.profilePicture.isEmpty
+                          ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                          : null,
+                    ),
+                    const SizedBox(height: 10),
+                    // Edit Profile Button
+                    ElevatedButton(
+                      onPressed: () {
+                        // Tambahkan logika upload foto di sini
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(color: Color(0xFF4F378B)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text(
+                        "Edit Profile",
+                        style: TextStyle(color: Color(0xFF4F378B)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Username & Email
+                    Text(
+                      user.username,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      user.email,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 20),
+                    // Divider
+                    const Divider(thickness: 1, indent: 40, endIndent: 40),
+                    // Stats
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Column(
+                        children: stats.entries.map((entry) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  entry.key,
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  entry.value.toString(),
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    // Divider
+                    const Divider(thickness: 1, indent: 40, endIndent: 40),
+                  ],
+                ),
+              ),
+            );
+          } else {
+            return const Center(child: Text("No profile data"));
+          }
+        },
       ),
     );
   }

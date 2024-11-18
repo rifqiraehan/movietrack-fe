@@ -9,8 +9,9 @@ class User {
   final String email;
   final String password;
   final bool isAdmin;
+  final String profilePicture;
 
-  User({required this.username, required this.email, required this.password, this.isAdmin = false});
+  User({required this.username, required this.email, required this.password, this.isAdmin = false, this.profilePicture = ''});
 
   // Convert to JSON (untuk dikirim ke API)
   Map<String, dynamic> toJson() {
@@ -26,8 +27,9 @@ class User {
     return User(
       username: json['username'],
       email: json['email'],
-      password: json['password'],
+      password: '',
       isAdmin: json['is_admin'] == 1,
+      profilePicture: json['pfp'] ?? '',
     );
   }
 
@@ -110,6 +112,41 @@ class User {
     } catch (e) {
       logger.i("Error: $e");
       return "An error occurred. Please try again."; // Pesan error fallback
+    }
+  }
+
+  // Fungsi getUserProfile
+  static Future<User?> getUserProfile() async {
+    final Logger logger = Logger();
+    final SessionManager sessionManager = SessionManager();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final token = await sessionManager.getToken();
+      final response = await http.get(
+        Uri.parse("$baseUrl/users"),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': '$token',
+        },
+      );
+
+      // Log response
+      logger.i("Response Status: ${response.statusCode}");
+      logger.i("Response Body: ${response.body}");
+
+      // Cek status response
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body)['data'];
+        return User.fromJson(responseData);
+      } else {
+        logger.e("Failed to load user profile");
+        return null;
+      }
+    } catch (e) {
+      logger.i("Error: $e");
+      return null; // Pesan error fallback
     }
   }
 }
