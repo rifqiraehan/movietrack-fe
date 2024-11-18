@@ -62,10 +62,12 @@ class User {
         final token = responseData['token'];
         final userId = responseData['id'];
         final username = responseData['username'];
+        final email = responseData['email'];
+        final profilePicture = responseData['pfp'] ?? '';
         final isAdmin = responseData['is_admin'] == 1;
 
         // Simpan sesi pengguna
-        await sessionManager.saveSession(token, userId, username, isAdmin);
+        await sessionManager.saveSession(token, userId, username, email, profilePicture, isAdmin);
 
         logger.i("Login success: ${response.body}");
         return null; // Jika berhasil login
@@ -107,7 +109,7 @@ class User {
         return null; // Jika berhasil register
       } else {
         final errorData = jsonDecode(response.body)['errors'];
-        return errorData['message']?.first ?? "Register failed";
+        return errorData.values.first.first ?? "Register failed";
       }
     } catch (e) {
       logger.i("Error: $e");
@@ -128,7 +130,7 @@ class User {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': '$token',
+          'Authorization': 'Bearer $token',
         },
       );
 
@@ -139,7 +141,12 @@ class User {
       // Cek status response
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body)['data'];
-        return User.fromJson(responseData);
+        final user = User.fromJson(responseData);
+
+        // Perbarui data pengguna di SharedPreferences
+        await sessionManager.updateUser(user.username, user.email, user.profilePicture);
+
+        return user;
       } else {
         logger.e("Failed to load user profile");
         return null;

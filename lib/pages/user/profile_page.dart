@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:movietrack/screens/login_screen.dart';
 import 'package:movietrack/utils/session.dart';
 import 'package:movietrack/models/user.dart';
+import 'package:movietrack/pages/user/edit_profile_page.dart';
+import 'package:movietrack/utils/common.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -16,18 +18,15 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _userProfile = User.getUserProfile();
+    _userProfile = _loadUserProfile();
   }
 
-  Future<void> _logout(BuildContext context) async {
+  Future<User?> _loadUserProfile() async {
     final sessionManager = SessionManager();
-    await sessionManager.clearSession();
-
-    // Kembali ke LoginScreen setelah logout
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+    final username = await sessionManager.getUsername();
+    final email = await sessionManager.getEmail();
+    final profilePicture = await sessionManager.getProfilePicture();
+    return User(username: username ?? '', email: email ?? '', password: '', profilePicture: profilePicture ?? '');
   }
 
   @override
@@ -43,7 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Color(0xFFE6E0E9)),
-            onPressed: () => _logout(context),
+            onPressed: () => CommonUtils.logout(context),
           ),
         ],
       ),
@@ -83,7 +82,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     // Edit Profile Button
                     ElevatedButton(
                       onPressed: () {
-                        // Tambahkan logika upload foto di sini
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => EditProfilePage(user: user)),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
