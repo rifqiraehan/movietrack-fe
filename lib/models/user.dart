@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:movietrack/utils/session.dart';
 import 'package:logger/logger.dart';
 import 'package:movietrack/utils/config.dart';
+import 'package:dio/dio.dart';
+import 'dart:io' if (dart.library.html) 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 
 class User {
   final String username;
@@ -130,7 +133,7 @@ class User {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization': '$token',
         },
       );
 
@@ -154,6 +157,76 @@ class User {
     } catch (e) {
       logger.i("Error: $e");
       return null; // Pesan error fallback
+    }
+  }
+
+  // Fungsi updateUserProfile
+  static Future<String?> updateProfile({
+    required String username,
+    required String email,
+    String? password,
+    dynamic profilePictureFile,
+  }) async {
+    final Logger logger = Logger();
+    final SessionManager sessionManager = SessionManager();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final token = await sessionManager.getToken();
+      final dio = Dio();
+      dio.options.headers['Authorization'] = '$token';
+      dio.options.headers['Accept'] = 'application/json';
+      dio.options.headers['Content-Type'] = 'application/json';
+      dio.options.headers['X-HTTP-Method-Override'] = 'PATCH';
+
+      FormData formData = FormData.fromMap({
+        'username': username,
+        'email': email,
+        if (password != null && password.isNotEmpty) 'password': password,
+      });
+
+      if (profilePictureFile != null) {
+        if (kIsWeb) {
+          // Handle file upload for web
+          formData.files.add(MapEntry(
+            'pfp',
+            MultipartFile.fromBytes(profilePictureFile, filename: 'profile_picture.jpg'),
+          ));
+        } else {
+          // Handle file upload for mobile
+          formData.files.add(MapEntry(
+            'pfp',
+            await MultipartFile.fromFile(profilePictureFile.path, filename: 'profile_picture.jpg'),
+          ));
+        }
+      }
+
+      final response = await dio.post(
+        '$baseUrl/users',
+        data: formData,
+      );
+
+      logger.i("Update Profile Response: ${response.statusCode}");
+      logger.i("Response Body: ${response.data}");
+
+      if (response.statusCode == 200) {
+        final responseData = response.data['data'];
+        final updatedUser = User.fromJson(responseData);
+
+        // Update user session
+        await sessionManager.updateUser(
+          updatedUser.username,
+          updatedUser.email,
+          updatedUser.profilePicture,
+        );
+
+        return null; // Success
+      } else {
+        return response.data['message'] ?? 'Failed to update profile';
+      }
+    } catch (e) {
+      logger.e("Error updating profile: $e");
+      return "An error occurred. Please try again.";
     }
   }
 }

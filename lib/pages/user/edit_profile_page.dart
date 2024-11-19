@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/models/user.dart';
-import 'package:movietrack/utils/common.dart';
+import 'package:movietrack/utils/file_picker_mobile.dart' if (dart.library.html) 'package:movietrack/utils/file_picker_web.dart';
 
 class EditProfilePage extends StatefulWidget {
   final User user;
@@ -8,7 +8,7 @@ class EditProfilePage extends StatefulWidget {
   const EditProfilePage({Key? key, required this.user}) : super(key: key);
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  _EditProfilePageState createState() => _EditProfilePageState();
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
@@ -16,21 +16,68 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  String? _profilePicture; // Placeholder for profile picture URL
 
-  void _pickImage() {
-    // Implementasi untuk memilih gambar dari galeri
-    print("Choose Profile Picture");
+  dynamic _imageFile;
+  String? _profilePicture;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController.text = widget.user.username;
+    _emailController.text = widget.user.email;
+    _profilePicture = widget.user.profilePicture;
   }
 
-  void _saveProfile() {
-    // Implementasi untuk menyimpan data profil
-    print("Save Profile Data");
-    Navigator.pop(context);
+  Future<void> _pickImage() async {
+    final pickedFile = await pickImage();
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (username.isEmpty || email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Username and Email cannot be empty")),
+      );
+      return;
+    }
+
+    if (password.isNotEmpty && password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    final errorMessage = await User.updateProfile(
+      username: username,
+      email: email,
+      password: password.isNotEmpty ? password : null,
+      profilePictureFile: _imageFile,
+    );
+
+    if (errorMessage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile updated successfully")),
+      );
+
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $errorMessage")),
+      );
+    }
   }
 
   void _closePage() {
-    // Logika untuk menutup halaman
     Navigator.pop(context);
   }
 
@@ -79,81 +126,81 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ),
           // Form dan Konten Lainnya
-            Expanded(
+          Expanded(
             child: Center(
               child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                const SizedBox(height: 20),
-                // Profile Picture Section
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[300],
-                  backgroundImage: _profilePicture != null ? NetworkImage(_profilePicture!) : null,
-                  child: _profilePicture == null
-                    ? const Icon(Icons.add_a_photo, size: 40, color: Colors.grey)
-                    : null,
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    // Profile Picture Section
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: _profilePicture != null ? NetworkImage(_profilePicture!) : null,
+                        child: _profilePicture == null
+                            ? const Icon(Icons.add_a_photo, size: 40, color: Colors.grey)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: _pickImage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(color: Color(0xFF4F378B)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text(
+                        "Pilih Foto",
+                        style: TextStyle(color: Color(0xFF4F378B)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Form Fields
+                    TextField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(
+                        labelText: "Username",
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        labelText: "Email",
+                        border: UnderlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(
+                        labelText: "Ganti Password",
+                        border: UnderlineInputBorder(),
+                      ),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _confirmPasswordController,
+                      decoration: const InputDecoration(
+                        labelText: "Konfirmasi Password Baru",
+                        border: UnderlineInputBorder(),
+                      ),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFF4F378B)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text(
-                  "Pilih Foto",
-                  style: TextStyle(color: Color(0xFF4F378B)),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Form Fields
-                TextField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                  labelText: "Username",
-                  border: UnderlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                  labelText: "Email",
-                  border: UnderlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                  labelText: "Ganti Password",
-                  border: UnderlineInputBorder(),
-                  ),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _confirmPasswordController,
-                  decoration: const InputDecoration(
-                  labelText: "Konfirmasi Password Baru",
-                  border: UnderlineInputBorder(),
-                  ),
-                  obscureText: true,
-                ),
-                const SizedBox(height: 30),
-                ],
-              ),
               ),
             ),
-            ),
+          ),
         ],
       ),
     );
