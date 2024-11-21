@@ -22,11 +22,12 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<User?> _loadUserProfile() async {
-    final sessionManager = SessionManager();
-    final username = await sessionManager.getUsername();
-    final email = await sessionManager.getEmail();
-    final profilePicture = await sessionManager.getProfilePicture();
-    return User(username: username ?? '', email: email ?? '', password: '', profilePicture: profilePicture ?? '');
+    final user = await User.getUserProfile();
+    if (user != null) {
+      final sessionManager = SessionManager();
+      await sessionManager.updateUser(user.username, user.email, user.profilePicture);
+    }
+    return user;
   }
 
   @override
@@ -39,6 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         backgroundColor: const Color(0xFF4F378B),
         centerTitle: true,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Color(0xFFE6E0E9)),
@@ -70,7 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
                     // Profile Picture
                     CircleAvatar(
-                      radius: 50,
+                      radius: 80,
                       backgroundColor: Colors.grey[300],
                       backgroundImage:
                           user.profilePicture.isNotEmpty ? NetworkImage(user.profilePicture) : null,
@@ -81,11 +83,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 10),
                     // Edit Profile Button
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => EditProfilePage(user: user)),
                         );
+                        if (result == true) {
+                          setState(() {
+                            _userProfile = _loadUserProfile();
+                          });
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,

@@ -8,17 +8,26 @@ import 'dart:io' if (dart.library.html) 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 
 class User {
+  final int userId;
   final String username;
   final String email;
   final String password;
   final bool isAdmin;
   final String profilePicture;
 
-  User({required this.username, required this.email, required this.password, this.isAdmin = false, this.profilePicture = ''});
+  User({
+    required this.userId,
+    required this.username,
+    required this.email,
+    required this.password,
+    this.isAdmin = false,
+    this.profilePicture = '',
+  });
 
   // Convert to JSON (untuk dikirim ke API)
   Map<String, dynamic> toJson() {
     return {
+      'user_id': userId,
       'username': username,
       'email': email,
       'password': password,
@@ -28,6 +37,7 @@ class User {
   // Create a User object from JSON
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
+      userId: json['id'],
       username: json['username'],
       email: json['email'],
       password: '',
@@ -43,7 +53,7 @@ class User {
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final user = User(username: username, email: '', password: password);
+      final user = User(userId: 0, username: username, email: '', password: password);
       logger.i("Sending login request with user: ${user.toJson()}");
 
       final response = await http.post(
@@ -90,7 +100,7 @@ class User {
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final user = User(username: username, email: email, password: password);
+      final user = User(userId: 0, username: username, email: email, password: password);
       logger.i("Sending register request with user: ${user.toJson()}");
 
       final response = await http.post(
@@ -128,6 +138,9 @@ class User {
 
     try {
       final token = await sessionManager.getToken();
+      if (token == null) {
+        return null;
+      }
       final response = await http.get(
         Uri.parse("$baseUrl/users"),
         headers: {
@@ -173,6 +186,9 @@ class User {
 
     try {
       final token = await sessionManager.getToken();
+      if (token == null) {
+        return "Unauthorized";
+      }
       final dio = Dio();
       dio.options.headers['Authorization'] = '$token';
       dio.options.headers['Accept'] = 'application/json';
@@ -213,11 +229,17 @@ class User {
         final responseData = response.data['data'];
         final updatedUser = User.fromJson(responseData);
 
-        // Update user session
-        await sessionManager.updateUser(
+        // Clear current session
+        await sessionManager.clearSession();
+
+        // Save new session data
+        await sessionManager.saveSession(
+          token,
+          updatedUser.userId,
           updatedUser.username,
           updatedUser.email,
           updatedUser.profilePicture,
+          updatedUser.isAdmin,
         );
 
         return null; // Success
