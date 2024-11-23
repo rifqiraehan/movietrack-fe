@@ -4,7 +4,6 @@ import 'package:movietrack/utils/session.dart';
 import 'package:logger/logger.dart';
 import 'package:movietrack/utils/config.dart';
 import 'package:dio/dio.dart';
-import 'dart:io' if (dart.library.html) 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 
 class User {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:movietrack/screens/login_screen.dart';
 import 'package:movietrack/utils/session.dart';
 import 'package:movietrack/models/user.dart';
 import 'package:movietrack/pages/user/edit_profile_page.dart';
