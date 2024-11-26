@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:movietrack/screens/login_screen.dart';
 import 'package:movietrack/pages/user/home_screen.dart';
 import 'package:movietrack/pages/admin/home_page.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:movietrack/utils/session.dart';
 
 void main() {
@@ -26,7 +25,7 @@ class MainApp extends StatelessWidget {
       title: 'MovieTrack',
       theme: ThemeData(
         primaryColor: const Color(0xFF4F378B),
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        fontFamily: 'Poppins',
       ),
       home: FutureBuilder<Map<String, dynamic>>(
         future: _checkLoginStatus(),
