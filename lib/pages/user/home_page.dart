@@ -1,36 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/list_widget/review_card.dart';
+import 'package:movietrack/models/review.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16.0),
-      children: const [
-        ReviewCard(
-          title: "Fate/Stay Night",
-          reviewText: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde alias magni ipsa omnis nemo deserunt illo",
-          reviewerImage: "https://via.placeholder.com/150",
-          username: "akariakaza",
-          date: "30 Sept 2024",
-        ),
-        ReviewCard(
-          title: "Who am I?",
-          reviewText: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde alias magni ipsa omnis nemo deserunt illo, ratione sed sapiente veritatis corporis...",
-          reviewerImage: "https://via.placeholder.com/150",
-          username: "cashtoria",
-          date: "28 Sept 2024",
-        ),
-        ReviewCard(
-          title: "Kimi no Suizou wo Tabetai",
-          reviewText: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde alias magni ipsa omnis nemo deserunt illo, ratione sed sapiente veritatis corporis...",
-          reviewerImage: "https://via.placeholder.com/150",
-          username: "akebikomichi",
-          date: "18 Nov 2024",
-        ),
-      ],
+    return Scaffold(
+      body: FutureBuilder<List<Review>>(
+        future: Review.getAll(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text("Failed to load reviews"));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No reviews available"));
+          } else {
+            final reviews = snapshot.data!;
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: reviews.length,
+              itemBuilder: (context, index) {
+                final review = reviews[index];
+                return ReviewCard(
+                  title: review.movieTitle,
+                  reviewText: review.body,
+                  reviewerImage: review.userPfp,
+                  username: review.userName,
+                  date: review.date,
+                );
+              },
+            );
+          }
+        },
+      ),
     );
   }
 }
