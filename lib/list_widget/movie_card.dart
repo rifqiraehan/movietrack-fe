@@ -15,6 +15,7 @@ class MovieCard extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Image Container without padding
         Container(
           width: 95,
           height: 135,
@@ -27,27 +28,31 @@ class MovieCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        // Padding only on the text content
+        const SizedBox(width: 16), // Space between image and text
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0), // Add padding here
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                year.toString(),
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey[600],
+                const SizedBox(height: 8),
+                Text(
+                  year.toString(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey[600],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

@@ -65,15 +65,16 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
   // Reusable method to build the movie list view
   Widget _buildMovieListView() {
     return ListView.separated(
-      padding: const EdgeInsets.all(16.0),
       itemCount: 10, // Replace with your dynamic data count
-      itemBuilder: (context, index) {
+      separatorBuilder: (BuildContext context, int index) {
+        return const Divider(height: 1);
+      },
+      itemBuilder: (BuildContext context, int index) {
         return MovieCard(
           title: 'Lorem Ipsum Dolor Sit Amet ${index + 1}',
           year: 2000 + index,
         );
       },
-      separatorBuilder: (context, index) => const Divider(height: 16),
     );
   }
 }

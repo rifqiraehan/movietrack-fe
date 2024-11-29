@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:movietrack/utils/session.dart';
 import 'package:logger/logger.dart';
 import 'package:movietrack/utils/config.dart';
 
@@ -25,7 +24,6 @@ class Review {
     required this.date,
   });
 
-  // Convert to JSON (untuk dikirim ke API)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -39,7 +37,6 @@ class Review {
     };
   }
 
-  // Create a Review object from JSON
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
       id: json['id'],
@@ -53,7 +50,6 @@ class Review {
     );
   }
 
-  // Get all reviews
   static Future<List<Review>> getAll() async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
