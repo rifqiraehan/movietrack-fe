@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:movietrack/models/movie.dart';
 
 class MovieCard extends StatelessWidget {
   final String title;
@@ -50,6 +49,8 @@ class MovieCard extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
                 const SizedBox(height: 8),
                 Text(

@@ -5,6 +5,8 @@ import 'package:movietrack/pages/admin/home_page.dart';
 import 'package:movietrack/utils/session.dart';
 import 'package:provider/provider.dart';
 import 'package:movietrack/providers/review_provider.dart';
+import 'package:movietrack/providers/movie_search_provider.dart';
+import 'package:movietrack/providers/movie_recommendations_provider.dart';
 
 void main() {
   runApp(const MainApp());
@@ -25,6 +27,8 @@ class MainApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => MovieSearchProvider()),
+        ChangeNotifierProvider(create: (_) => MovieRecommendationsProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

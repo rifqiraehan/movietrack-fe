@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:movietrack/models/movie.dart';
 import 'package:movietrack/list_widget/movie_card.dart';
+import 'package:provider/provider.dart';
+import 'package:movietrack/providers/movie_search_provider.dart';
+import 'package:movietrack/providers/movie_recommendations_provider.dart';
+import 'package:movietrack/models/movie.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
@@ -10,34 +13,15 @@ class DiscoverPage extends StatefulWidget {
 }
 
 class _DiscoverPageState extends State<DiscoverPage> {
-  List<Movie> searchResults = [];
-  bool isSearching = false; // Flag to track if search is active
-  bool isLoading = false; // Flag to track if data is loading
   final TextEditingController _controller = TextEditingController();
 
-  // Function to handle search
-  void _handleSearch(String query) async {
-    if (query.isEmpty) return;
-
-    setState(() {
-      isLoading = true;
-      isSearching = true;
-    });
-
-    try {
-      final results = await Movie.search(query);
-      setState(() {
-        searchResults = results;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to fetch search results')),
-      );
-    }
+  @override
+  void initState() {
+    super.initState();
+    final movieRecommendationsProvider = Provider.of<MovieRecommendationsProvider>(context, listen: false);
+    movieRecommendationsProvider.fetchRecommendations();
+    movieRecommendationsProvider.fetchTopRated();
+    movieRecommendationsProvider.fetchPopular();
   }
 
   @override
@@ -48,13 +32,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   @override
   Widget build(BuildContext context) {
+    final movieSearchProvider = Provider.of<MovieSearchProvider>(context);
+    final movieRecommendationsProvider = Provider.of<MovieRecommendationsProvider>(context);
+
     return WillPopScope(
       onWillPop: () async {
-        if (isSearching) {
-          setState(() {
-            isSearching = false;
-            _controller.clear();
-          });
+        if (movieSearchProvider.isSearching) {
+          movieSearchProvider.resetState();
+          _controller.clear();
           return false;
         }
         return true;
@@ -62,14 +47,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
       child: Scaffold(
         body: Column(
           children: [
-            _buildSearchBar(),
+            _buildSearchBar(movieSearchProvider),
             const SizedBox(height: 16),
             Expanded(
-              child: isLoading
+              child: movieSearchProvider.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : isSearching
-                      ? _buildSearchResults()
-                      : _buildRecommendationList(),
+                  : movieSearchProvider.isSearching
+                      ? _buildSearchResults(movieSearchProvider)
+                      : _buildRecommendationList(movieRecommendationsProvider),
             ),
           ],
         ),
@@ -78,12 +63,12 @@ class _DiscoverPageState extends State<DiscoverPage> {
   }
 
   // Search Bar
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(MovieSearchProvider movieSearchProvider) {
     return Padding(
       padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
       child: TextField(
         controller: _controller,
-        onSubmitted: _handleSearch, // Trigger search on 'Enter'
+        onSubmitted: (query) => movieSearchProvider.searchMovies(query), // Trigger search on 'Enter'
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.search),
           hintText: 'Search',
@@ -99,15 +84,15 @@ class _DiscoverPageState extends State<DiscoverPage> {
   }
 
   // Build search results
-  Widget _buildSearchResults() {
-    if (searchResults.isEmpty) {
+  Widget _buildSearchResults(MovieSearchProvider movieSearchProvider) {
+    if (movieSearchProvider.searchResults.isEmpty) {
       return const Center(child: Text('No results found.'));
     }
     return ListView.separated(
-      itemCount: searchResults.length,
+      itemCount: movieSearchProvider.searchResults.length,
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
-        final movie = searchResults[index];
+        final movie = movieSearchProvider.searchResults[index];
         return MovieCard(
           title: movie.title,
           year: movie.releaseDate.isNotEmpty ? int.parse(movie.releaseDate.substring(0, 4)) : 0,
@@ -118,7 +103,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
   }
 
   // Build recommendation list
-  Widget _buildRecommendationList() {
+  Widget _buildRecommendationList(MovieRecommendationsProvider movieRecommendationsProvider) {
+    if (movieRecommendationsProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (movieRecommendationsProvider.errorMessage.isNotEmpty) {
+      return Center(child: Text(movieRecommendationsProvider.errorMessage));
+    } else if (movieRecommendationsProvider.recommendations.isEmpty) {
+      return const Center(child: Text('No recommendations available.'));
+    }
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -128,13 +120,13 @@ class _DiscoverPageState extends State<DiscoverPage> {
               [
                 _buildSectionTitle('Movie Recommendations'),
                 const SizedBox(height: 10),
-                _buildMovieList(),
+                _buildMovieList(movieRecommendationsProvider.recommendations),
                 _buildSectionTitle('Popular'),
                 const SizedBox(height: 10),
-                _buildMovieList(),
+                _buildMovieList(movieRecommendationsProvider.topRated),
                 _buildSectionTitle('Top Rated'),
                 const SizedBox(height: 10),
-                _buildMovieList(),
+                _buildMovieList(movieRecommendationsProvider.popular),
               ],
             ),
           ),
@@ -154,21 +146,22 @@ class _DiscoverPageState extends State<DiscoverPage> {
     );
   }
 
-  // Dummy Movie List for Recommendations
-  Widget _buildMovieList() {
+  // Movie List for Recommendations
+  Widget _buildMovieList(List<Movie> movies) {
     return SizedBox(
       height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 10, // Replace with real data count if available
+        itemCount: movies.length,
         itemBuilder: (context, index) {
-          return _buildMovieCard();
+          final movie = movies[index];
+          return _buildMovieCard(movie);
         },
       ),
     );
   }
 
-  Widget _buildMovieCard() {
+  Widget _buildMovieCard(Movie movie) {
     return Container(
       width: 95,
       margin: const EdgeInsets.only(right: 12),
@@ -178,18 +171,25 @@ class _DiscoverPageState extends State<DiscoverPage> {
           Container(
             height: 135,
             color: Colors.grey[300],
-            child: const Center(
-              child: Icon(
-                Icons.image,
-                size: 50,
-                color: Colors.grey,
-              ),
-            ),
+            child: movie.posterPath.isNotEmpty
+                ? Image.network(
+                    movie.posterPath,
+                    fit: BoxFit.cover,
+                  )
+                : const Center(
+                    child: Icon(
+                      Icons.image,
+                      size: 50,
+                      color: Colors.grey,
+                    ),
+                  ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Lorem Ipsum',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          Text(
+            movie.title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ],
       ),

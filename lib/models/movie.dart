@@ -58,4 +58,77 @@ class Movie {
       throw Exception("Failed to fetch movies");
     }
   }
+
+  static Future<List<Movie>> fetchRecommendations() async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/recs/upcoming"));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final List<dynamic> data = responseData['data'];
+        logger.i("Received recommendations: $data");
+
+        return data.map((e) => Movie.fromJson(e)).toList();
+      } else {
+        logger.e("Failed to fetch recommendations: ${response.body}");
+        throw Exception("Failed to fetch recommendations");
+      }
+    } catch (e) {
+      logger.e("Failed to fetch recommendations: $e");
+      throw Exception("Failed to fetch recommendations");
+    }
+  }
+
+    static Future<List<Movie>> fetchTopRated() async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/recs/top-rated"));
+      logger.i("Top Rated Response Status Code: ${response.statusCode}");
+      logger.i("Top Rated Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final List<dynamic> data = responseData['data'];
+        logger.i("Received top rated movie data: $data");
+
+        return data.map((e) => Movie.fromJson(e)).toList();
+      } else {
+        logger.e("Failed to fetch top rated movie: ${response.body}");
+        throw Exception("Failed to fetch top rated movie");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while fetching top rated movie: $e");
+      throw Exception("Failed to fetch top rated movie");
+    }
+  }
+
+    static Future<List<Movie>> fetchPopular() async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/recs/popular"));
+      logger.i("Popular Response Status Code: ${response.statusCode}");
+      logger.i("Popular Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final List<dynamic> data = responseData['data'];
+        logger.i("Received popular movie data: $data");
+
+        return data.map((e) => Movie.fromJson(e)).toList();
+      } else {
+        logger.e("Failed to fetch popular movie: ${response.body}");
+        throw Exception("Failed to fetch popular movie");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while fetching popular movie: $e");
+      throw Exception("Failed to fetch popular movie");
+    }
+  }
 }

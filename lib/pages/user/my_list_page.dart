@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/list_widget/movie_card.dart';
-import 'package:movietrack/models/movie.dart';
 
 class MyListPage extends StatefulWidget {
   const MyListPage({Key? key}) : super(key: key);
