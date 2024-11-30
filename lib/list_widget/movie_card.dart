@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:movietrack/models/movie.dart';
 
 class MovieCard extends StatelessWidget {
   final String title;
   final int year;
+  final String posterPath;
 
   const MovieCard({
     Key? key,
     required this.title,
     required this.year,
+    required this.posterPath,
   }) : super(key: key);
 
   @override
@@ -20,13 +23,18 @@ class MovieCard extends StatelessWidget {
           width: 95,
           height: 135,
           color: Colors.grey[300],
-          child: const Center(
-            child: Icon(
-              Icons.image,
-              size: 50,
-              color: Colors.grey,
-            ),
-          ),
+          child: posterPath.isNotEmpty
+              ? Image.network(
+                  posterPath,
+                  fit: BoxFit.cover,
+                )
+              : const Center(
+                  child: Icon(
+                    Icons.image,
+                    size: 50,
+                    color: Colors.grey,
+                  ),
+                ),
         ),
         // Padding only on the text content
         const SizedBox(width: 16), // Space between image and text

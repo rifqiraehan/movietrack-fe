@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:movietrack/list_widget/movie_card.dart'; // Assuming you already have this widget
+import 'package:movietrack/list_widget/movie_card.dart';
+import 'package:movietrack/models/movie.dart';
 
 class MyListPage extends StatefulWidget {
   const MyListPage({Key? key}) : super(key: key);
@@ -73,6 +74,7 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
         return MovieCard(
           title: 'Lorem Ipsum Dolor Sit Amet ${index + 1}',
           year: 2000 + index,
+          posterPath: 'https://via.placeholder.com/500',
         );
       },
     );
