@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart';
-import 'discover_page.dart';
-import 'my_list_page.dart';
-import 'profile_page.dart';
+import 'package:movietrack/pages/user/home_page.dart';
+import 'package:movietrack/pages/user/discover_page.dart';
+import 'package:movietrack/pages/user/my_list_page.dart';
+import 'package:movietrack/pages/user/profile_page.dart';
+import 'package:provider/provider.dart';
+import 'package:movietrack/providers/review_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -21,6 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {
     MyListPage(),
     ProfilePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<ReviewProvider>(context, listen: false).fetchReviews();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -46,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: _selectedIndex != 3
-          ? AppBar(
+            ? AppBar(
           title: const Text(
             'MovieTrack',
             style: TextStyle(color: Color(0xFFE6E0E9), fontSize: 22, fontWeight: FontWeight.bold),
@@ -54,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: const Color(0xFF4F378B),
           centerTitle: true,
         )
-        : null,
+            : null,
         body: IndexedStack(
           index: _selectedIndex,
           children: _pages,

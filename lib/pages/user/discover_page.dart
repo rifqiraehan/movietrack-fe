@@ -12,35 +12,67 @@ class DiscoverPage extends StatefulWidget {
 class _DiscoverPageState extends State<DiscoverPage> {
   List<Movie> searchResults = [];
   bool isSearching = false; // Flag to track if search is active
+  bool isLoading = false; // Flag to track if data is loading
   final TextEditingController _controller = TextEditingController();
 
   // Function to handle search
   void _handleSearch(String query) async {
     if (query.isEmpty) return;
 
+    setState(() {
+      isLoading = true;
+      isSearching = true;
+    });
+
     try {
       final results = await Movie.search(query);
       setState(() {
         searchResults = results;
-        isSearching = true; // Show search results
+        isLoading = false;
       });
     } catch (e) {
-      // Handle errors or show a message to the user
-      print("Error: $e");
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch search results')),
+      );
     }
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          const SizedBox(height: 16),
-          Expanded(
-            child: isSearching ? _buildSearchResults() : _buildRecommendationList(),
-          ),
-        ],
+    return WillPopScope(
+      onWillPop: () async {
+        if (isSearching) {
+          setState(() {
+            isSearching = false;
+            _controller.clear();
+          });
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        body: Column(
+          children: [
+            _buildSearchBar(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : isSearching
+                      ? _buildSearchResults()
+                      : _buildRecommendationList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -48,7 +80,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
   // Search Bar
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
       child: TextField(
         controller: _controller,
         onSubmitted: _handleSearch, // Trigger search on 'Enter'
@@ -78,7 +110,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
         final movie = searchResults[index];
         return MovieCard(
           title: movie.title,
-          year: int.parse(movie.releaseDate.split('-')[0]),
+          year: movie.releaseDate.isNotEmpty ? int.parse(movie.releaseDate.substring(0, 4)) : 0,
           posterPath: movie.posterPath,
         );
       },
@@ -90,7 +122,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(right: 16, left: 16, bottom: 12),
           sliver: SliverList(
             delegate: SliverChildListDelegate(
               [
