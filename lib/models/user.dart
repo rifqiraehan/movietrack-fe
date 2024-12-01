@@ -145,7 +145,7 @@ class User {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': '$token',
+          'Authorization': token,
         },
       );
 
@@ -189,7 +189,7 @@ class User {
         return "Unauthorized";
       }
       final dio = Dio();
-      dio.options.headers['Authorization'] = '$token';
+      dio.options.headers['Authorization'] = token;
       dio.options.headers['Accept'] = 'application/json';
       dio.options.headers['Content-Type'] = 'application/json';
       dio.options.headers['X-HTTP-Method-Override'] = 'PATCH';

@@ -3,7 +3,6 @@ import 'package:movietrack/models/user.dart';
 import 'package:movietrack/utils/file_picker_mobile.dart' if (dart.library.html) 'package:movietrack/utils/file_picker_web.dart';
 import 'package:movietrack/utils/session.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -135,16 +134,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     // Save Button
                     InkWell(
                       onTap: _saveProfile,
+                      borderRadius: BorderRadius.circular(20),
                       child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Save",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF4F378B),
-                            fontWeight: FontWeight.bold,
-                          ),
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "Save",
+                        style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF4F378B),
+                        fontWeight: FontWeight.bold,
                         ),
+                      ),
                       ),
                     ),
                   ],

@@ -27,7 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<ReviewProvider>(context, listen: false).fetchReviews();
+    Future.microtask(() {
+      Provider.of<ReviewProvider>(context, listen: false).fetchReviews();
+    });
   }
 
   void _onItemTapped(int index) {
@@ -55,13 +57,13 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         appBar: _selectedIndex != 3
             ? AppBar(
-          title: const Text(
-            'MovieTrack',
-            style: TextStyle(color: Color(0xFFE6E0E9), fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: const Color(0xFF4F378B),
-          centerTitle: true,
-        )
+                title: const Text(
+                  'MovieTrack',
+                  style: TextStyle(color: Color(0xFFE6E0E9), fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                backgroundColor: const Color(0xFF4F378B),
+                centerTitle: true,
+              )
             : null,
         body: IndexedStack(
           index: _selectedIndex,

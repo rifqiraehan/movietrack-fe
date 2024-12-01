@@ -71,6 +71,7 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
       },
       itemBuilder: (BuildContext context, int index) {
         return MovieCard(
+          id: index, // Replace with actual movie ID
           title: 'Lorem Ipsum Dolor Sit Amet ${index + 1}',
           year: 2000 + index,
           posterPath: 'https://via.placeholder.com/500',

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:movietrack/list_widget/movie_card.dart';
 import 'package:provider/provider.dart';
 import 'package:movietrack/providers/movie_search_provider.dart';
 import 'package:movietrack/providers/movie_recommendations_provider.dart';
 import 'package:movietrack/models/movie.dart';
+import 'package:movietrack/list_widget/movie_card.dart';
+import 'package:movietrack/list_widget/recs_card.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
@@ -18,10 +19,12 @@ class _DiscoverPageState extends State<DiscoverPage> {
   @override
   void initState() {
     super.initState();
-    final movieRecommendationsProvider = Provider.of<MovieRecommendationsProvider>(context, listen: false);
-    movieRecommendationsProvider.fetchRecommendations();
-    movieRecommendationsProvider.fetchTopRated();
-    movieRecommendationsProvider.fetchPopular();
+    Future.microtask(() {
+      final movieRecommendationsProvider = Provider.of<MovieRecommendationsProvider>(context, listen: false);
+      movieRecommendationsProvider.fetchRecommendations();
+      movieRecommendationsProvider.fetchTopRated();
+      movieRecommendationsProvider.fetchPopular();
+    });
   }
 
   @override
@@ -94,6 +97,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
       itemBuilder: (context, index) {
         final movie = movieSearchProvider.searchResults[index];
         return MovieCard(
+          id: movie.id,
           title: movie.title,
           year: movie.releaseDate.isNotEmpty ? int.parse(movie.releaseDate.substring(0, 4)) : 0,
           posterPath: movie.posterPath,
@@ -155,43 +159,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
         itemCount: movies.length,
         itemBuilder: (context, index) {
           final movie = movies[index];
-          return _buildMovieCard(movie);
+          return RecsCard(movie: movie);
         },
-      ),
-    );
-  }
-
-  Widget _buildMovieCard(Movie movie) {
-    return Container(
-      width: 95,
-      margin: const EdgeInsets.only(right: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 135,
-            color: Colors.grey[300],
-            child: movie.posterPath.isNotEmpty
-                ? Image.network(
-                    movie.posterPath,
-                    fit: BoxFit.cover,
-                  )
-                : const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 50,
-                      color: Colors.grey,
-                    ),
-                  ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            movie.title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 2,
-          ),
-        ],
       ),
     );
   }
