@@ -99,8 +99,8 @@ class _DiscoverPageState extends State<DiscoverPage> {
         return MovieCard(
           id: movie.id,
           title: movie.title,
-          year: movie.releaseDate.isNotEmpty ? int.parse(movie.releaseDate.substring(0, 4)) : 0,
-          posterPath: movie.posterPath,
+          year: movie.releaseDate?.isNotEmpty == true ? int.parse(movie.releaseDate!.substring(0, 4)) : 0,
+          posterPath: movie.posterPath ?? '',
         );
       },
     );

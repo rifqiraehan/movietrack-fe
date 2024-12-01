@@ -2,18 +2,32 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:movietrack/utils/config.dart';
+import 'package:movietrack/models/genre.dart';
+import 'package:movietrack/models/production_company.dart';
 
 class Movie {
   final int id;
   final String title;
-  final String posterPath;
-  final String releaseDate;
+  final String? posterPath;
+  final String? releaseDate;
+  final List<Genre> genres;
+  final String? overview;
+  final ProductionCompany? productionCompany;
+  final int? runtime;
+  final String? status;
+  final double? voteAverage;
 
   Movie({
     required this.id,
     required this.title,
-    required this.posterPath,
-    required this.releaseDate,
+    this.posterPath,
+    this.releaseDate,
+    required this.genres,
+    this.overview,
+    this.productionCompany,
+    this.runtime,
+    this.status,
+    this.voteAverage,
   });
 
   Map<String, dynamic> toJson() {
@@ -22,6 +36,12 @@ class Movie {
       'title': title,
       'poster_path': posterPath,
       'release_date': releaseDate,
+      'genres': genres.map((genre) => genre.toJson()).toList(),
+      'overview': overview,
+      'production_company': productionCompany?.toJson(),
+      'runtime': runtime,
+      'status': status,
+      'vote_average': voteAverage,
     };
   }
 
@@ -31,8 +51,21 @@ class Movie {
       title: json['title'],
       posterPath: json['poster_path'] != null
           ? 'https://image.tmdb.org/t/p/w500${json['poster_path']}'
-          : '',
-      releaseDate: json['release_date'] ?? '',
+          : null,
+      releaseDate: json['release_date'],
+      genres: (json['genres'] as List<dynamic>?)
+              ?.map((genreJson) => Genre.fromJson(genreJson))
+              .toList() ??
+          [],
+      overview: json['overview'],
+      productionCompany: json['production_companies'] != null
+          ? ProductionCompany.fromJson(json['production_companies'])
+          : null,
+      runtime: json['runtime'],
+      status: json['status'],
+      voteAverage: json['vote_average'] != null
+          ? (json['vote_average'] as num).toDouble()
+          : null,
     );
   }
 
@@ -45,7 +78,7 @@ class Movie {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> data = responseData['data'];
+        final List<dynamic> data = responseData['data'] ?? [];
         logger.i("Received movies: $data");
 
         return data.map((e) => Movie.fromJson(e)).toList();
@@ -68,7 +101,7 @@ class Movie {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> data = responseData['data'];
+        final List<dynamic> data = responseData['data'] ?? [];
         logger.i("Received recommendations: $data");
 
         return data.map((e) => Movie.fromJson(e)).toList();
@@ -82,7 +115,7 @@ class Movie {
     }
   }
 
-    static Future<List<Movie>> fetchTopRated() async {
+  static Future<List<Movie>> fetchTopRated() async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
 
@@ -93,7 +126,7 @@ class Movie {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> data = responseData['data'];
+        final List<dynamic> data = responseData['data'] ?? [];
         logger.i("Received top rated movie data: $data");
 
         return data.map((e) => Movie.fromJson(e)).toList();
@@ -107,7 +140,7 @@ class Movie {
     }
   }
 
-    static Future<List<Movie>> fetchPopular() async {
+  static Future<List<Movie>> fetchPopular() async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
 
@@ -118,7 +151,7 @@ class Movie {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> data = responseData['data'];
+        final List<dynamic> data = responseData['data'] ?? [];
         logger.i("Received popular movie data: $data");
 
         return data.map((e) => Movie.fromJson(e)).toList();

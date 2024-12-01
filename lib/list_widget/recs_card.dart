@@ -50,9 +50,9 @@ class _RecsCardState extends State<RecsCard> {
                 duration: const Duration(milliseconds: 100),
                 height: _isPressed ? 130 : 135,
                 color: Colors.grey[300],
-                child: widget.movie.posterPath.isNotEmpty
+                child: widget.movie.posterPath?.isNotEmpty == true
                     ? Image.network(
-                        widget.movie.posterPath,
+                        widget.movie.posterPath!,
                         fit: BoxFit.cover,
                       )
                     : const Center(
