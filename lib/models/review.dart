@@ -50,6 +50,33 @@ class Review {
     );
   }
 
+  static Future<List<Review>> fetchReviewsForMovie(int movieId) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/movies/$movieId/reviews"));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success'] == false && responseData['message'] == 'No reviews found for this movie') {
+          logger.i("No reviews found for movie ID: $movieId");
+          return [];
+        }
+        final List<dynamic> data = responseData['data'];
+        logger.i("Received reviews: $data");
+
+        return data.map((e) => Review.fromJson(e)).toList();
+      } else {
+        logger.e("Failed to fetch reviews: ${response.body}");
+        throw Exception("Failed to fetch reviews");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while fetching reviews: $e");
+      throw Exception("Failed to fetch reviews");
+    }
+  }
+
   static Future<List<Review>> getAll() async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;

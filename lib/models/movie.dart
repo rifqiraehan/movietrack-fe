@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:movietrack/models/review.dart';
 import 'package:movietrack/utils/config.dart';
 import 'package:movietrack/models/genre.dart';
 import 'package:movietrack/models/production_company.dart';
@@ -64,7 +65,7 @@ class Movie {
       runtime: json['runtime'],
       status: json['status'],
       voteAverage: json['vote_average'] != null
-          ? (json['vote_average'] as num).toDouble()
+          ? double.tryParse(json['vote_average'].toString())
           : null,
     );
   }
@@ -89,6 +90,28 @@ class Movie {
     } catch (e) {
       logger.e("Failed to fetch movies: $e");
       throw Exception("Failed to fetch movies");
+    }
+  }
+
+  static Future<Movie> fetchDetails(int id) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/movies/$id"));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body)['data'];
+        logger.i("Received movie details: $responseData");
+
+        return Movie.fromJson(responseData);
+      } else {
+        logger.e("Failed to fetch movie details: ${response.body}");
+        throw Exception("Failed to fetch movie details");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while fetching movie details: $e");
+      throw Exception("Failed to fetch movie details");
     }
   }
 
@@ -162,6 +185,16 @@ class Movie {
     } catch (e) {
       logger.e("Exception occurred while fetching popular movie: $e");
       throw Exception("Failed to fetch popular movie");
+    }
+  }
+
+  Future<List<Review>> fetchMovieReviews(int id) async {
+    final response = await http.get(Uri.parse("${AuthService.baseUrl}/movies/$id/reviews"));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body)['data'];
+      return data.map((reviewJson) => Review.fromJson(reviewJson)).toList();
+    } else {
+      throw Exception('Failed to load reviews');
     }
   }
 }
