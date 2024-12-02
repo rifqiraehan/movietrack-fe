@@ -12,6 +12,7 @@ class Review {
   final String movieTitle;
   final String userPfp;
   final String date;
+  final String recMsg;
 
   Review({
     required this.id,
@@ -22,6 +23,7 @@ class Review {
     required this.movieTitle,
     required this.userPfp,
     required this.date,
+    required this.recMsg,
   });
 
   Map<String, dynamic> toJson() {
@@ -34,6 +36,7 @@ class Review {
       'movie_title': movieTitle,
       'user_pfp': userPfp,
       'date': date,
+      'recommendation_message': recMsg,
     };
   }
 
@@ -42,11 +45,12 @@ class Review {
       id: json['id'],
       userId: json['user_id'],
       movieId: json['movie_id'],
-      body: json['body'],
-      userName: json['user_name'],
-      movieTitle: json['movie_title'],
-      userPfp: json['user_pfp'],
-      date: json['date'],
+      body: json['body'] ?? '',
+      userName: json['user_name'] ?? '',
+      movieTitle: json['movie_title'] ?? '',
+      userPfp: json['user_pfp'] ?? '',
+      date: json['date'] ?? '',
+      recMsg: json['recommendation_message'] ?? '',
     );
   }
 
@@ -56,6 +60,33 @@ class Review {
 
     try {
       final response = await http.get(Uri.parse("$baseUrl/movies/$movieId/reviews"));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success'] == false && responseData['message'] == 'No reviews found for this movie') {
+          logger.i("No reviews found for movie ID: $movieId");
+          return [];
+        }
+        final List<dynamic> data = responseData['data'];
+        logger.i("Received reviews: $data");
+
+        return data.map((e) => Review.fromJson(e)).toList();
+      } else {
+        logger.e("Failed to fetch reviews: ${response.body}");
+        throw Exception("Failed to fetch reviews");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while fetching reviews: $e");
+      throw Exception("Failed to fetch reviews");
+    }
+  }
+
+  static Future<List<Review>> fetchLatestReviewsForMovie(int movieId) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/movies/$movieId/reviews/latest"));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);

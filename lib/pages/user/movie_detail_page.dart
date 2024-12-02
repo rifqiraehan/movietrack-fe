@@ -106,10 +106,13 @@ class MovieDetailPage extends StatelessWidget {
                                   ),
                                   Text(
                                     movie.productionCompany?.name
-                                        .split(' ')
-                                        .map((word) => word.length > 9 ? '${word.substring(0, 8)}.' : word)
-                                        .take(2)
-                                        .join('\n') ?? 'N/A',
+                                            .split(' ')
+                                            .map((word) => word.length > 9
+                                                ? '${word.substring(0, 8)}.'
+                                                : word)
+                                            .take(2)
+                                            .join('\n') ??
+                                        'N/A',
                                     style: const TextStyle(fontSize: 16),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 2,
@@ -191,6 +194,43 @@ class MovieDetailPage extends StatelessWidget {
                   ),
                   // add divider
                   const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: GestureDetector(
+                        onTap: () {
+                          // Navigate to the review page
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Text(
+                                'Lihat Review',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Align(
@@ -202,47 +242,7 @@ class MovieDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Add review card with horizontal scroll
-                  FutureBuilder<List<Review>>(
-                    future: Review.fetchReviewsForMovie(movieId),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(
-                            child: Text('No reviews available'));
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else {
-                        final reviews = snapshot.data!;
-                        return Container(
-                          width: MediaQuery.of(context).size.width,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: SizedBox(
-                            height: 200,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: reviews.length,
-                              itemBuilder: (context, index) {
-                                final review = reviews[index];
-                                return Container(
-                                  width: MediaQuery.of(context).size.width - 32, // Fixed width
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ReviewCardDetail(
-                                    title: review.movieTitle,
-                                    reviewText: review.body,
-                                    reviewerImage: review.userPfp,
-                                    username: review.userName,
-                                    date: review.date,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  ),
+
                   SizedBox(height: 20),
                 ],
               ),

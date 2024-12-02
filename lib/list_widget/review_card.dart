@@ -8,6 +8,7 @@ class ReviewCard extends StatelessWidget {
   final String username;
   final String date;
   final int movieId;
+  final String recMsg;
 
   const ReviewCard({
     Key? key,
@@ -17,6 +18,7 @@ class ReviewCard extends StatelessWidget {
     required this.username,
     required this.date,
     required this.movieId,
+    required this.recMsg,
   }) : super(key: key);
 
   @override
@@ -51,23 +53,39 @@ class ReviewCard extends StatelessWidget {
               Row(
                 children: [
                   CircleAvatar(
-                    backgroundImage: NetworkImage(reviewerImage),
-                    radius: 20,
+                  backgroundImage: NetworkImage(reviewerImage),
+                  radius: 20,
                   ),
                   const SizedBox(width: 8),
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        username,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        date,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                    username,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                    date,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
                   ),
+                  const Spacer(),
+                    Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                    color: recMsg == "Recommended"
+                      ? Colors.green
+                      : recMsg == "Not Recommended"
+                        ? Colors.red
+                        : Colors.grey,
+                    borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                    recMsg,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                    ),
                 ],
               ),
             ],

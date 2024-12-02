@@ -33,6 +33,7 @@ class HomePage extends StatelessWidget {
                                 username: review.userName,
                                 date: review.date,
                                 movieId: review.movieId, // Pass movieId to ReviewCard
+                                recMsg: review.recMsg, // Pass recMsg to ReviewCard
                               );
                             },
                           ),
