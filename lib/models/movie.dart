@@ -5,6 +5,7 @@ import 'package:movietrack/models/review.dart';
 import 'package:movietrack/utils/config.dart';
 import 'package:movietrack/models/genre.dart';
 import 'package:movietrack/models/production_company.dart';
+import 'package:movietrack/utils/session.dart';
 
 class Movie {
   final int id;
@@ -120,7 +121,15 @@ class Movie {
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final response = await http.get(Uri.parse("$baseUrl/recs/upcoming"));
+      final sessionManager = SessionManager();
+      final token = await sessionManager.getToken();
+
+      final response = await http.get(
+        Uri.parse("$baseUrl/recs/dynamic"),
+        headers: {
+          'Authorization': '$token',
+        },
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -135,6 +144,31 @@ class Movie {
     } catch (e) {
       logger.e("Failed to fetch recommendations: $e");
       throw Exception("Failed to fetch recommendations");
+    }
+  }
+
+  static Future<List<Movie>> fetchRecsID(int id) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(Uri.parse("$baseUrl/movies/$id/recommendations"));
+      logger.i("Top Rated Response Status Code: ${response.statusCode}");
+      logger.i("Top Rated Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final List<dynamic> data = responseData['data'] ?? [];
+        logger.i("Received top rated movie data: $data");
+
+        return data.map((e) => Movie.fromJson(e)).toList();
+      } else {
+        logger.e("Failed to fetch top rated movie: ${response.body}");
+        throw Exception("Failed to fetch top rated movie");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while fetching top rated movie: $e");
+      throw Exception("Failed to fetch top rated movie");
     }
   }
 

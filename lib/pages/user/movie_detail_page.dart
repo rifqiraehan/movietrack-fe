@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:movietrack/models/movie.dart';
-import 'package:movietrack/models/review.dart';
-import 'package:movietrack/list_widget/review_card_detail.dart';
+import 'package:movietrack/pages/user/review_movie_page.dart';
+import 'package:movietrack/list_widget/recs_card.dart';
 
 class MovieDetailPage extends StatelessWidget {
   final int movieId;
@@ -198,54 +198,87 @@ class MovieDetailPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Align(
                       alignment: Alignment.center,
-                      child: GestureDetector(
-                        onTap: () {
-                          // Navigate to the review page
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Text(
-                                'Lihat Review',
-                                style: TextStyle(
-                                  fontSize: 16,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            // Navigate to the review page
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  ReviewMoviePage(movieId: movie.id),
+                            ));
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 147, 147, 147),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Text(
+                                  'Lihat Review',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward,
                                   color: Colors.white,
                                 ),
-                              ),
-                              SizedBox(width: 8),
-                              Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 30),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Latest Reviews',
+                        'Mungkin anda suka',
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
-
-                  SizedBox(height: 20),
-                ],
-              ),
+                    // Recommendation list with recs card
+                    Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: FutureBuilder<List<Movie>>(
+                      future: Movie.fetchRecsID(movieId),
+                      builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No recommendations available.'));
+                      } else {
+                        final recommendations = snapshot.data!;
+                        return SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: recommendations.length,
+                          itemBuilder: (context, index) {
+                          final movie = recommendations[index];
+                          return RecsCard(movie: movie);
+                          },
+                        ),
+                        );
+                      }
+                      },
+                    ),
+                    ),
+              ]),
             );
           }
         },

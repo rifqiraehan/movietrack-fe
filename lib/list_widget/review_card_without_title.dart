@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
-class ReviewCardDetail extends StatelessWidget {
+class ReviewCardWithoutTitle extends StatelessWidget {
   final String reviewText;
   final String reviewerImage;
   final String username;
   final String date;
+  final int movieId;
   final String recMsg;
 
-  const ReviewCardDetail({
+  const ReviewCardWithoutTitle({
     Key? key,
     required this.reviewText,
     required this.reviewerImage,
     required this.username,
     required this.date,
+    required this.movieId,
     required this.recMsg,
   }) : super(key: key);
 
@@ -22,9 +24,6 @@ class ReviewCardDetail extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       child: InkWell(
-        onTap: () {
-          // Handle on tap
-        },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
