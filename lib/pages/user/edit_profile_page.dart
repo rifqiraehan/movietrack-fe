@@ -164,7 +164,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         GestureDetector(
                           onTap: _pickImage,
                           child: CircleAvatar(
-                            radius: 50,
+                            radius: 80,
                             backgroundColor: Colors.grey[300],
                             backgroundImage: _imageFile != null
                                 ? (_imageFile is Uint8List

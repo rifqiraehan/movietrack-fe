@@ -243,7 +243,7 @@ class MovieDetailPage extends StatelessWidget {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Mungkin anda suka',
+                        'Mungkin Anda Suka',
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:movietrack/models/watchlist_status_count.dart';
 import 'package:movietrack/utils/session.dart';
 import 'package:movietrack/models/user.dart';
+import 'package:movietrack/models/watchlist.dart';
 import 'package:movietrack/pages/user/edit_profile_page.dart';
 import 'package:movietrack/utils/common.dart';
 
@@ -13,11 +15,15 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late Future<User?> _userProfile;
+  late Future<List<WatchlistStatusCount>> _watchlistCounts;
+  late Future<WatchlistStatusCount> _mostFavoriteGenre;
 
   @override
   void initState() {
     super.initState();
     _userProfile = _loadUserProfile();
+    _watchlistCounts = Watchlist.fetchWatchlistCount();
+    _mostFavoriteGenre = Watchlist.fetchMostFavoriteGenre();
   }
 
   Future<User?> _loadUserProfile() async {
@@ -56,13 +62,6 @@ class _ProfilePageState extends State<ProfilePage> {
             return const Center(child: Text("Failed to load profile"));
           } else if (snapshot.hasData) {
             final user = snapshot.data!;
-            final Map<String, int> stats = {
-              "Watching": 3,
-              "Completed": 4,
-              "Dropped": 0,
-              "Plan to Watch": 6,
-            };
-
             return Center(
               child: SingleChildScrollView(
                 child: Column(
@@ -114,34 +113,86 @@ class _ProfilePageState extends State<ProfilePage> {
                       style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(height: 20),
-                    // Divider
-                    const Divider(thickness: 1, indent: 40, endIndent: 40),
-                    // Stats
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: Column(
-                        children: stats.entries.map((entry) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  entry.key,
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    // Most Favorite Genre
+                    FutureBuilder<WatchlistStatusCount>(
+                      future: _mostFavoriteGenre,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return const Center(child: Text("Failed to load most favorite genre"));
+                        } else if (snapshot.hasData) {
+                          final genre = snapshot.data!;
+                          return Column(
+                            children: [
+                              const Text(
+                                "Genre Favorit",
+                                style: TextStyle(fontSize: 16, color: Colors.black),
+                              ),
+                              const SizedBox(height: 10),
+                              // Favorite Genre Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                Text(
-                                  entry.value.toString(),
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                child: Text(
+                                  genre.name,
+                                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                           );
-                        }).toList(),
-                      ),
+                        } else {
+                          return const Center(child: Text("No favorite genre data"));
+                        }
+                      },
                     ),
                     // Divider
-                    const Divider(thickness: 1, indent: 40, endIndent: 40),
+                    // const Divider(thickness: 1, indent: 40, endIndent: 40),
+                    // Stats
+                    FutureBuilder<List<WatchlistStatusCount>>(
+                      future: _watchlistCounts,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return const Center(child: Text("Failed to load watchlist counts"));
+                        } else if (snapshot.hasData) {
+                          final watchlistCounts = snapshot.data!;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 150),
+                            child: Column(
+                              children: watchlistCounts.map((entry) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 5),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        entry.name,
+                                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                      ),
+                                      Text(
+                                        entry.count.toString(),
+                                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          );
+                        } else {
+                          return const Center(child: Text("No watchlist data"));
+                        }
+                      },
+                    ),
+                    // Divider
+                    // const Divider(thickness: 1, indent: 40, endIndent: 40),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),

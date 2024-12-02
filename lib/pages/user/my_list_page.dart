@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:movietrack/list_widget/movie_card.dart';
+import 'package:movietrack/list_widget/movie_watchlist_card.dart';
 
 class MyListPage extends StatefulWidget {
   const MyListPage({Key? key}) : super(key: key);
@@ -70,7 +70,7 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
         return const Divider(height: 1);
       },
       itemBuilder: (BuildContext context, int index) {
-        return MovieCard(
+        return MovieWatchlistCard(
           id: index, // Replace with actual movie ID
           title: 'Lorem Ipsum Dolor Sit Amet ${index + 1}',
           year: 2000 + index,

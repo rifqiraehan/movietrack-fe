@@ -122,13 +122,13 @@ class _DiscoverPageState extends State<DiscoverPage> {
           sliver: SliverList(
             delegate: SliverChildListDelegate(
               [
-                _buildSectionTitle('Movie Recommendations'),
+                _buildSectionTitle('Rekomendasi Movie'),
                 const SizedBox(height: 10),
                 _buildMovieList(movieRecommendationsProvider.recommendations),
-                _buildSectionTitle('Popular'),
+                _buildSectionTitle('Peringkat Teratas'),
                 const SizedBox(height: 10),
                 _buildMovieList(movieRecommendationsProvider.topRated),
-                _buildSectionTitle('Top Rated'),
+                _buildSectionTitle('Populer'),
                 const SizedBox(height: 10),
                 _buildMovieList(movieRecommendationsProvider.popular),
               ],
