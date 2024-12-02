@@ -49,7 +49,7 @@ class Watchlist {
       final token = await sessionManager.getToken();
 
       final response = await http.get(
-        Uri.parse("$baseUrl/watchlist/$statusId"),
+        Uri.parse("$baseUrl/watchlists/$statusId"),
         headers: {
           'Authorization': '$token',
         },
@@ -57,7 +57,7 @@ class Watchlist {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> data = responseData['data']['movies'];
+        final List<dynamic> data = responseData['data'];
         return data.map((e) => Watchlist.fromJson(e)).toList();
       } else {
         logger.e("Failed to fetch watchlist by status: ${response.statusCode}");
