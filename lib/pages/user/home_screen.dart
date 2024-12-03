@@ -61,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'MovieTrack',
                   style: TextStyle(color: Color(0xFFE6E0E9), fontSize: 22, fontWeight: FontWeight.bold),
                 ),
+                automaticallyImplyLeading: false,
                 backgroundColor: const Color(0xFF4F378B),
                 centerTitle: true,
               )

@@ -172,8 +172,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     : FileImage(_imageFile as File))
                                 : (_profilePicture != null ? NetworkImage(_profilePicture!) : null),
                             child: _imageFile == null && _profilePicture == null
-                                ? const Icon(Icons.add_a_photo, size: 40, color: Colors.grey)
-                                : null,
+                                ? const Icon(Icons.add_a_photo, size: 70, color: Colors.white)
+                                : const Icon(Icons.add_a_photo, size: 70, color: Colors.white),
                           ),
                         ),
                         const SizedBox(height: 10),

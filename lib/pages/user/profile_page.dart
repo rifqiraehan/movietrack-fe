@@ -75,8 +75,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       backgroundImage:
                           user.profilePicture.isNotEmpty ? NetworkImage(user.profilePicture) : null,
                       child: user.profilePicture.isEmpty
-                          ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                          : null,
+                          ? const Icon(Icons.person, size: 100, color: Colors.white)
+                          : const Icon(Icons.person, size: 100, color: Colors.white),
                     ),
                     const SizedBox(height: 10),
                     // Edit Profile Button
@@ -123,30 +123,30 @@ class _ProfilePageState extends State<ProfilePage> {
                           return const Center(child: Text("Failed to load most favorite genre"));
                         } else if (snapshot.hasData) {
                           final genre = snapshot.data!;
-                          return Column(
+                            return Column(
                             children: [
                               const Text(
-                                "Genre Favorit",
-                                style: TextStyle(fontSize: 16, color: Colors.black),
+                              "Genre Favorit",
+                              style: TextStyle(fontSize: 16, color: Colors.black),
                               ),
                               const SizedBox(height: 10),
                               // Favorite Genre Badge
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  genre.name,
-                                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                                ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                genre.name.isNotEmpty ? genre.name : "Belum Ada",
+                                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
                               ),
                               const SizedBox(height: 20),
                             ],
-                          );
+                            );
                         } else {
-                          return const Center(child: Text("No favorite genre data"));
+                          return const Center(child: Text("Belum Ada"));
                         }
                       },
                     ),
