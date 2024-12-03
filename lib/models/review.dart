@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:movietrack/utils/config.dart';
+import 'package:movietrack/utils/session.dart';
 
 class Review {
   final int id;
@@ -52,6 +53,53 @@ class Review {
       date: json['date'] ?? '',
       recMsg: json['recommendation_message'] ?? '',
     );
+  }
+
+  /* {
+      "comment-request" : "/movies/{movie_id}/reviews/user  --AUTH",
+      "data": {
+          "id": 7,
+          "user_id": 2,
+          "movie_id": 615165,
+          "body": "This movie is terrible.",
+          "user_name": "AkebiKomichi",
+          "movie_title": "Her Blue Sky",
+          "user_pfp": "http://localhost:8000/storage/pfps/akebi.jpeg",
+          "recommendation_message": null,
+          "date": "03 Dec 2024"
+      }
+  } */
+
+  // get review of movie_id by current user's watchlist
+  static Future<Review> fetchReview(int movieId) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final sessionManager = SessionManager();
+      final token = await sessionManager.getToken();
+
+      final response = await http.get(
+        Uri.parse("$baseUrl/movies/$movieId/reviews/user"),
+        headers: {
+          'Authorization': '$token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final data = responseData['data'];
+        logger.i("Received review: $data");
+
+        return Review.fromJson(data);
+      } else {
+        logger.e("Failed to fetch review: ${response.body}");
+        throw Exception("Failed to fetch review");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while fetching review: $e");
+      throw Exception("Failed to fetch review");
+    }
   }
 
   static Future<List<Review>> fetchReviewsForMovie(int movieId) async {
@@ -128,6 +176,73 @@ class Review {
     } catch (e) {
       logger.e("Failed to get reviews: $e");
       return [];
+    }
+  }
+
+  static Future<Review> addReview(int movieId, String body) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final sessionManager = SessionManager();
+      final token = await sessionManager.getToken();
+      final userId = await sessionManager.getUserId();
+
+      final response = await http.post(
+        Uri.parse("$baseUrl/review"),
+        headers: {
+          'Authorization': '$token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'movie_id': movieId,
+          'body': body,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return Review.fromJson(responseData['data']);
+      } else {
+        logger.e("Failed to add review: ${response.body}");
+        throw Exception("Failed to add review");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while adding review: $e");
+      throw Exception("Failed to add review");
+    }
+  }
+
+  static Future<Review> editReview(int id, String body) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final sessionManager = SessionManager();
+      final token = await sessionManager.getToken();
+
+      final response = await http.patch(
+        Uri.parse("$baseUrl/review/$id"),
+        headers: {
+          'Authorization': '$token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'body': body,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return Review.fromJson(responseData['data']);
+      } else {
+        logger.e("Failed to edit review: ${response.body}");
+        throw Exception("Failed to edit review");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while editing review: $e");
+      throw Exception("Failed to edit review");
     }
   }
 }

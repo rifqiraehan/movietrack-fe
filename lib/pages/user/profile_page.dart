@@ -75,8 +75,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       backgroundImage:
                           user.profilePicture.isNotEmpty ? NetworkImage(user.profilePicture) : null,
                       child: user.profilePicture.isEmpty
-                          ? const Icon(Icons.person, size: 100, color: Colors.white)
-                          : const Icon(Icons.person, size: 100, color: Colors.white),
+                          ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                          : null,
                     ),
                     const SizedBox(height: 10),
                     // Edit Profile Button

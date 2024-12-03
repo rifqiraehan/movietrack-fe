@@ -10,7 +10,8 @@ class MyListPage extends StatefulWidget {
   _MyListPageState createState() => _MyListPageState();
 }
 
-class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateMixin {
+class _MyListPageState extends State<MyListPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Movie> _watchingList = [];
   List<Movie> _completedList = [];
@@ -30,10 +31,14 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
       _isLoading = true;
     });
 
-    _watchingList = await _fetchMoviesByStatus(1); // Assuming 1 is the statusId for 'Watching'
-    _completedList = await _fetchMoviesByStatus(2); // Assuming 2 is the statusId for 'Completed'
-    _droppedList = await _fetchMoviesByStatus(3); // Assuming 3 is the statusId for 'Dropped'
-    _plannedList = await _fetchMoviesByStatus(4); // Assuming 4 is the statusId for 'Planned'
+    _watchingList = await _fetchMoviesByStatus(
+        1); // 'Watching'
+    _completedList = await _fetchMoviesByStatus(
+        2); // 'Completed'
+    _droppedList = await _fetchMoviesByStatus(
+        3); // 'Dropped'
+    _plannedList = await _fetchMoviesByStatus(
+        4); // 'Planned'
 
     setState(() {
       _isLoading = false;
@@ -41,7 +46,8 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
   }
 
   Future<List<Movie>> _fetchMoviesByStatus(int statusId) async {
-    List<Watchlist> watchlist = await Watchlist.fetchWatchlistByStatus(statusId);
+    List<Watchlist> watchlist =
+        await Watchlist.fetchWatchlistByStatus(statusId);
     List<Movie> movies = [];
     for (var item in watchlist) {
       Movie movie = await Movie.fetchDetails(item.movieId);
@@ -68,8 +74,10 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
               controller: _tabController,
               isScrollable: true,
               labelColor: Colors.black, // Active tab label color
-              unselectedLabelColor: Colors.black.withOpacity(0.6), // Unselected color
-              indicatorColor: const Color(0xFF4F378B), // Indicator color (active tab line)
+              unselectedLabelColor:
+                  Colors.black.withOpacity(0.6), // Unselected color
+              indicatorColor:
+                  const Color(0xFF4F378B), // Indicator color (active tab line)
               tabs: const [
                 Tab(text: 'Watching'),
                 Tab(text: 'Completed'),
@@ -99,25 +107,25 @@ class _MyListPageState extends State<MyListPage> with SingleTickerProviderStateM
 
   // Reusable method to build the movie list view
   Widget _buildMovieListView(List<Movie> movies) {
-  if (movies.isEmpty) {
-    return const Center(
-      child: Text('Tidak ada watchlist pada status ini'),
-    );
-  }
-  return ListView.separated(
-    itemCount: movies.length,
-    separatorBuilder: (BuildContext context, int index) {
-      return const Divider(height: 1);
-    },
-    itemBuilder: (BuildContext context, int index) {
-      final movie = movies[index];
-      return MovieWatchlistCard(
-        id: movie.id,
-        title: movie.title,
-        year: int.parse(movie.releaseDate?.substring(0, 4) ?? '0'),
-        posterPath: movie.posterPath ?? 'https://via.placeholder.com/500',
+    if (movies.isEmpty) {
+      return const Center(
+        child: Text('Tidak ada watchlist pada status ini'),
       );
-    },
-  );
+    }
+    return ListView.separated(
+      itemCount: movies.length,
+      separatorBuilder: (BuildContext context, int index) {
+        return const Divider(height: 1);
+      },
+      itemBuilder: (BuildContext context, int index) {
+        final movie = movies[index];
+        return MovieWatchlistCard(
+          id: movie.id,
+          title: movie.title,
+          year: int.parse(movie.releaseDate?.substring(0, 4) ?? '0'),
+          posterPath: movie.posterPath ?? 'https://via.placeholder.com/500',
+        );
+      },
+    );
   }
 }

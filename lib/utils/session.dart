@@ -33,6 +33,12 @@ class SessionManager {
     return prefs.getString(_keyToken);
   }
 
+  // ambil user id
+  Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyUserId);
+  }
+
   // Ambil username
   Future<String?> getUsername() async {
     final prefs = await SharedPreferences.getInstance();

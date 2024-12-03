@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:movietrack/models/watchlist.dart';
+import 'package:movietrack/pages/user/edit_watchlist_page.dart';
 import 'package:movietrack/pages/user/movie_detail_page.dart';
 
 class MovieWatchlistCard extends StatelessWidget {
@@ -98,14 +100,27 @@ class MovieWatchlistCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Navigate to another page (not yet defined)
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditWatchlistPage(
+                  watchlist: Watchlist(
+                    id: id,
+                    userId: 0,
+                    movieId: id,
+                    statusId: 1,
+                    score: 0,
+                  ), // Pass the current watchlist data
+                ),
+              ),
+            );
           },
           child: Container(
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               shape: BoxShape.rectangle,
-                border: Border.all(color: Colors.grey),
-                color: Colors.transparent,
+              border: Border.all(color: Colors.grey),
+              color: Colors.transparent,
             ),
             child: const Icon(
               Icons.edit,
