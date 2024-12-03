@@ -160,7 +160,8 @@ class Watchlist {
     }
   }
 
-  static Future<Watchlist> addToWatchlist(int movieId, int statusId, int score) async {
+  static Future<Watchlist> addToWatchlist(
+      int movieId, int statusId, int score) async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
 
@@ -196,7 +197,7 @@ class Watchlist {
     }
   }
 
-  static Future<Watchlist> editWatchlist(int id, int statusId, int score) async {
+    static Future<Watchlist> editWatchlist(int id, int statusId, int score) async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
 
@@ -204,24 +205,48 @@ class Watchlist {
       final sessionManager = SessionManager();
       final token = await sessionManager.getToken();
 
+      final requestBody = jsonEncode({
+        'status_id': statusId,
+        'score': score,
+      });
+
       final response = await http.patch(
         Uri.parse("$baseUrl/watchlists/$id"),
         headers: {
           'Authorization': '$token',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'status_id': statusId,
-          'score': score,
-        }),
+        body: requestBody,
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        return Watchlist.fromJson(responseData['data']);
+      logger.i("Request to edit watchlist: ${response.request?.url}");
+      logger.i("Request body: $requestBody");
+      logger.i("Response status: ${response.statusCode}");
+      logger.i("Response body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
+        final responseData = jsonDecode(response.body);
+        if (responseData is Map<String, dynamic> && responseData['data'] is List) {
+          final dataList = responseData['data'] as List;
+          if (dataList.isNotEmpty && dataList[0] is Map<String, dynamic>) {
+            return Watchlist.fromJson(dataList[0]);
+          } else {
+            logger.e("Unexpected response format: ${response.body}");
+            throw Exception("Unexpected response format");
+          }
+        } else {
+          logger.e("Unexpected response format: ${response.body}");
+          throw Exception("Unexpected response format");
+        }
       } else {
-        logger.e("Failed to edit watchlist: ${response.body}");
-        throw Exception("Failed to edit watchlist");
+        final responseData = jsonDecode(response.body);
+        if (responseData['message'] == 'Movie not found in current user’s watchlist') {
+          logger.e("Movie not found in current user’s watchlist");
+          throw Exception("Movie not found in current user’s watchlist");
+        } else {
+          logger.e("Failed to edit watchlist: ${response.body}");
+          throw Exception("Failed to edit watchlist");
+        }
       }
     } catch (e) {
       logger.e("Exception occurred while editing watchlist: $e");

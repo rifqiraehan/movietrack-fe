@@ -214,7 +214,7 @@ class Review {
     }
   }
 
-  static Future<Review> editReview(int id, String body) async {
+    static Future<void> editReview(int watchlistId, String reviewText) async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
 
@@ -222,20 +222,32 @@ class Review {
       final sessionManager = SessionManager();
       final token = await sessionManager.getToken();
 
+      final requestBody = jsonEncode({
+        'body': reviewText,
+      });
+
       final response = await http.patch(
-        Uri.parse("$baseUrl/review/$id"),
+        Uri.parse("$baseUrl/reviews/$watchlistId"),
         headers: {
           'Authorization': '$token',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'body': body,
-        }),
+        body: requestBody,
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        return Review.fromJson(responseData['data']);
+      logger.i("Request to edit review: ${response.request?.url}");
+      logger.i("Request body: $requestBody");
+      logger.i("Response status: ${response.statusCode}");
+      logger.i("Response body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
+        final responseData = jsonDecode(response.body);
+        if (responseData is Map<String, dynamic> && responseData['success'] == true) {
+          logger.i("Review edited successfully");
+        } else {
+          logger.e("Unexpected response format: ${response.body}");
+          throw Exception("Unexpected response format");
+        }
       } else {
         logger.e("Failed to edit review: ${response.body}");
         throw Exception("Failed to edit review");

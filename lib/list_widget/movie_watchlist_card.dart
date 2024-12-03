@@ -4,6 +4,7 @@ import 'package:movietrack/pages/user/edit_watchlist_page.dart';
 import 'package:movietrack/pages/user/movie_detail_page.dart';
 
 class MovieWatchlistCard extends StatelessWidget {
+  final Watchlist watchlist;
   final int id;
   final String title;
   final int year;
@@ -11,6 +12,7 @@ class MovieWatchlistCard extends StatelessWidget {
 
   const MovieWatchlistCard({
     Key? key,
+    required this.watchlist,
     required this.id,
     required this.title,
     required this.year,
@@ -104,13 +106,7 @@ class MovieWatchlistCard extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => EditWatchlistPage(
-                  watchlist: Watchlist(
-                    id: id,
-                    userId: 0,
-                    movieId: id,
-                    statusId: 1,
-                    score: 0,
-                  ), // Pass the current watchlist data
+                  watchlist: watchlist, // Pass the watchlist object
                 ),
               ),
             );

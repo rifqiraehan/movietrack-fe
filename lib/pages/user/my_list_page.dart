@@ -13,10 +13,10 @@ class MyListPage extends StatefulWidget {
 class _MyListPageState extends State<MyListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<Movie> _watchingList = [];
-  List<Movie> _completedList = [];
-  List<Movie> _droppedList = [];
-  List<Movie> _plannedList = [];
+  List<Map<String, dynamic>> _watchingList = [];
+  List<Map<String, dynamic>> _completedList = [];
+  List<Map<String, dynamic>> _droppedList = [];
+  List<Map<String, dynamic>> _plannedList = [];
   bool _isLoading = true;
 
   @override
@@ -27,34 +27,29 @@ class _MyListPageState extends State<MyListPage>
   }
 
   Future<void> _fetchWatchlists() async {
-    setState(() {
-      _isLoading = true;
-    });
+  setState(() {
+    _isLoading = true;
+  });
 
-    _watchingList = await _fetchMoviesByStatus(
-        1); // 'Watching'
-    _completedList = await _fetchMoviesByStatus(
-        2); // 'Completed'
-    _droppedList = await _fetchMoviesByStatus(
-        3); // 'Dropped'
-    _plannedList = await _fetchMoviesByStatus(
-        4); // 'Planned'
+  _watchingList = await _fetchMoviesByStatus(1); // 'Watching'
+  _completedList = await _fetchMoviesByStatus(2); // 'Completed'
+  _droppedList = await _fetchMoviesByStatus(3); // 'Dropped'
+  _plannedList = await _fetchMoviesByStatus(4); // 'Planned'
 
-    setState(() {
-      _isLoading = false;
-    });
+  setState(() {
+    _isLoading = false;
+  });
+}
+
+  Future<List<Map<String, dynamic>>> _fetchMoviesByStatus(int statusId) async {
+  List<Watchlist> watchlist = await Watchlist.fetchWatchlistByStatus(statusId);
+  List<Map<String, dynamic>> moviesWithWatchlist = [];
+  for (var item in watchlist) {
+    Movie movie = await Movie.fetchDetails(item.movieId);
+    moviesWithWatchlist.add({'movie': movie, 'watchlist': item});
   }
-
-  Future<List<Movie>> _fetchMoviesByStatus(int statusId) async {
-    List<Watchlist> watchlist =
-        await Watchlist.fetchWatchlistByStatus(statusId);
-    List<Movie> movies = [];
-    for (var item in watchlist) {
-      Movie movie = await Movie.fetchDetails(item.movieId);
-      movies.add(movie);
-    }
-    return movies;
-  }
+  return moviesWithWatchlist;
+}
 
   @override
   void dispose() {
@@ -106,20 +101,22 @@ class _MyListPageState extends State<MyListPage>
   }
 
   // Reusable method to build the movie list view
-  Widget _buildMovieListView(List<Movie> movies) {
-    if (movies.isEmpty) {
+    Widget _buildMovieListView(List<Map<String, dynamic>> moviesWithWatchlist) {
+    if (moviesWithWatchlist.isEmpty) {
       return const Center(
         child: Text('Tidak ada watchlist pada status ini'),
       );
     }
     return ListView.separated(
-      itemCount: movies.length,
+      itemCount: moviesWithWatchlist.length,
       separatorBuilder: (BuildContext context, int index) {
         return const Divider(height: 1);
       },
       itemBuilder: (BuildContext context, int index) {
-        final movie = movies[index];
+        final movie = moviesWithWatchlist[index]['movie'] as Movie;
+        final watchlist = moviesWithWatchlist[index]['watchlist'] as Watchlist;
         return MovieWatchlistCard(
+          watchlist: watchlist,
           id: movie.id,
           title: movie.title,
           year: int.parse(movie.releaseDate?.substring(0, 4) ?? '0'),
