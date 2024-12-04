@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 launchUrl(
                   Uri.parse(
-                    "mailto:rifqiraehan86@gmail.com?subject=[MovieTrack] Request Reset Password&body=Halo, Developer MovieTrack!\nSaya ingin melakukan reset password akun Movie Track saya dengan nama akun email sebagai berikut:\n[nama_akun]\nSekian, Terimakasih."
+                    "mailto:rifqiraehan86@gmail.com?subject=%20%5BMovieTrack%5D%20Request%20Reset%20Password&body=Halo%2C%20Developer%20MovieTrack!%0A%0ASaya%20ingin%20melakukan%20reset%20password%20akun%20MovieTrack%20saya%20dengan%20nama%20akun%20email%20sebagai%20berikut%3A%0A%5Bnama_akun%5D%0A%0ASekian%2C%20Terima%20kasih.%0A%0A%0ACatatan%20Developer%3A%0AUntuk%20memastikan%20permintaan%20reset%20password%20dapat%20diproses%20dengan%20cepat%2C%20pastikan%20Anda%20mengirim%20email%20ini%20menggunakan%20akun%20email%20yang%20terdaftar%20di%20MovieTrack.%20Permintaan%20dari%20email%20yang%20tidak%20terdaftar%20akan%20ditolak."
                   )
                 );
               },

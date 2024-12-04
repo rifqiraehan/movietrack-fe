@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:movietrack/models/user.dart';
 import 'package:movietrack/screens/login_screen.dart';
 import 'package:movietrack/utils/session.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({Key? key}) : super(key: key);
@@ -45,7 +46,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     });
   }
 
-  Future<void> _resetPassword(int userId) async {
+  Future<void> _resetPassword(int userId, String email) async {
     final result = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -69,6 +70,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password reset successfully')),
       );
+
+      final Uri emailLaunchUri = Uri(
+        scheme: 'mailto',
+        path: email,
+        query: Uri.encodeFull(
+          'subject=[MovieTrack] Confirmed Request Password&body=Password akun Anda telah berhasil direset. Password sementara Anda adalah \'secret\'.\n\nDemi keamanan, kami menyarankan Anda untuk segera mengubah password ini melalui pengaturan akun MovieTrack.\n\nTerima kasih atas kepercayaan Anda menggunakan MovieTrack.',
+        ),
+      );
+
+      launchUrl(emailLaunchUri);
     }
   }
 
@@ -166,7 +177,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       final user = _users[index];
                       return UserCard(
                         user: user,
-                        onResetPassword: () => _resetPassword(user.userId),
+                        onResetPassword: () => _resetPassword(user.userId, user.email),
                         onRemoveUser: () => _removeUser(user.userId),
                       );
                     },

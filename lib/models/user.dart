@@ -318,7 +318,7 @@ class User {
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final response = await http.post(
+      final response = await http.patch(
         Uri.parse("$baseUrl/users/$userId/reset-password"),
         headers: {
           'Accept': 'application/json',

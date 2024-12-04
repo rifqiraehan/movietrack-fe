@@ -163,7 +163,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         } else if (snapshot.hasData) {
                           final watchlistCounts = snapshot.data!;
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 150),
+                            padding: const EdgeInsets.symmetric(horizontal: 100),
                             child: Column(
                               children: watchlistCounts.map((entry) {
                                 return Padding(
