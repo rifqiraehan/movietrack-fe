@@ -52,7 +52,8 @@ class User {
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final user = User(userId: 0, username: username, email: '', password: password);
+      final user =
+          User(userId: 0, username: username, email: '', password: password);
       logger.i("Sending login request with user: ${user.toJson()}");
 
       final response = await http.post(
@@ -79,7 +80,8 @@ class User {
         final isAdmin = responseData['is_admin'] == 1;
 
         // Simpan sesi pengguna
-        await sessionManager.saveSession(token, userId, username, email, profilePicture, isAdmin);
+        await sessionManager.saveSession(
+            token, userId, username, email, profilePicture, isAdmin);
 
         logger.i("Login success: ${response.body}");
         return null; // Jika berhasil login
@@ -94,12 +96,14 @@ class User {
   }
 
   // Fungsi register
-  static Future<String?> register(String username, String email, String password) async {
+  static Future<String?> register(
+      String username, String email, String password) async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final user = User(userId: 0, username: username, email: email, password: password);
+      final user =
+          User(userId: 0, username: username, email: email, password: password);
       logger.i("Sending register request with user: ${user.toJson()}");
 
       final response = await http.post(
@@ -159,7 +163,8 @@ class User {
         final user = User.fromJson(responseData);
 
         // Perbarui data pengguna di SharedPreferences
-        await sessionManager.updateUser(user.username, user.email, user.profilePicture);
+        await sessionManager.updateUser(
+            user.username, user.email, user.profilePicture);
 
         return user;
       } else {
@@ -205,13 +210,15 @@ class User {
           // Handle file upload for web
           formData.files.add(MapEntry(
             'pfp',
-            MultipartFile.fromBytes(profilePictureFile, filename: 'profile_picture.jpg'),
+            MultipartFile.fromBytes(profilePictureFile,
+                filename: 'profile_picture.jpg'),
           ));
         } else {
           // Handle file upload for mobile
           formData.files.add(MapEntry(
             'pfp',
-            await MultipartFile.fromFile(profilePictureFile.path, filename: 'profile_picture.jpg'),
+            await MultipartFile.fromFile(profilePictureFile.path,
+                filename: 'profile_picture.jpg'),
           ));
         }
       }
@@ -248,6 +255,108 @@ class User {
     } catch (e) {
       logger.e("Error updating profile: $e");
       return "An error occurred. Please try again.";
+    }
+  }
+
+  // Fetch all users
+  static Future<List<User>> fetchAllUsers() async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/users/all"),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        return data.map((json) => User.fromJson(json)).toList();
+      } else {
+        logger.e("Failed to fetch users: ${response.body}");
+        throw Exception("Failed to fetch users");
+      }
+    } catch (e) {
+      logger.e("Error fetching users: $e");
+      throw Exception("Error fetching users");
+    }
+  }
+
+  // Search users
+  static Future<List<User>> searchUsers(String query) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/users/search?query=$query"),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        return data.map((json) => User.fromJson(json)).toList();
+      } else {
+        logger.e("Failed to search users: ${response.body}");
+        throw Exception("Failed to search users");
+      }
+    } catch (e) {
+      logger.e("Error searching users: $e");
+      throw Exception("Error searching users");
+    }
+  }
+
+  // Reset user password
+  static Future<void> resetPassword(int userId) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/users/$userId/reset-password"),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        logger.e("Failed to reset password: ${response.body}");
+        throw Exception("Failed to reset password");
+      }
+    } catch (e) {
+      logger.e("Error resetting password: $e");
+      throw Exception("Error resetting password");
+    }
+  }
+
+  // Remove user
+  static Future<void> removeUser(int userId) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final response = await http.delete(
+        Uri.parse("$baseUrl/users/$userId"),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        logger.e("Failed to remove user: ${response.body}");
+        throw Exception("Failed to remove user");
+      }
+    } catch (e) {
+      logger.e("Error removing user: $e");
+      throw Exception("Error removing user");
     }
   }
 }
