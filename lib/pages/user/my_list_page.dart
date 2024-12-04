@@ -121,6 +121,7 @@ class _MyListPageState extends State<MyListPage>
           title: movie.title,
           year: int.parse(movie.releaseDate?.substring(0, 4) ?? '0'),
           posterPath: movie.posterPath ?? 'https://via.placeholder.com/500',
+          onRefresh: _fetchWatchlists, // Pass the callback to refresh data
         );
       },
     );

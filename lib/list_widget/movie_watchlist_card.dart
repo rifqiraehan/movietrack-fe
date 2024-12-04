@@ -9,6 +9,7 @@ class MovieWatchlistCard extends StatelessWidget {
   final String title;
   final int year;
   final String posterPath;
+  final VoidCallback onRefresh; // Add a callback to refresh data
 
   const MovieWatchlistCard({
     Key? key,
@@ -17,6 +18,7 @@ class MovieWatchlistCard extends StatelessWidget {
     required this.title,
     required this.year,
     required this.posterPath,
+    required this.onRefresh, // Add the callback to the constructor
   }) : super(key: key);
 
   @override
@@ -59,8 +61,7 @@ class MovieWatchlistCard extends StatelessWidget {
                 const SizedBox(width: 16), // Space between image and text
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0), // Add padding here
+                    padding: const EdgeInsets.symmetric(vertical: 8.0), // Add padding here
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -101,8 +102,8 @@ class MovieWatchlistCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => EditWatchlistPage(
@@ -110,6 +111,9 @@ class MovieWatchlistCard extends StatelessWidget {
                 ),
               ),
             );
+            if (result == true) {
+              onRefresh(); // Call the callback to refresh data
+            }
           },
           child: Container(
             padding: const EdgeInsets.all(8.0),

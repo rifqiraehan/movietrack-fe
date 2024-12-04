@@ -19,6 +19,7 @@ class _EditWatchlistPageState extends State<EditWatchlistPage> {
   int _selectedStatus = 1;
   int _selectedScore = 1;
   String _movieTitle = '';
+  int? _reviewId;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _EditWatchlistPageState extends State<EditWatchlistPage> {
       final review = await Review.fetchReview(widget.watchlist.movieId);
       setState(() {
         _reviewController.text = review.body.isNotEmpty ? review.body : '';
+        _reviewId = review.id;
       });
     } catch (e) {
       // If there's no review or another issue, leave the review field empty
@@ -67,9 +69,9 @@ class _EditWatchlistPageState extends State<EditWatchlistPage> {
       await Watchlist.editWatchlist(
           widget.watchlist.id, _selectedStatus, _selectedScore);
 
-      if (reviewText.isNotEmpty) {
+      if (reviewText.isNotEmpty && _reviewId != null) {
         // Edit existing review
-        await Review.editReview(widget.watchlist.id, reviewText);
+        await Review.editReview(_reviewId!, reviewText);
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,6 +83,29 @@ class _EditWatchlistPageState extends State<EditWatchlistPage> {
       // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update watchlist: $e')),
+      );
+    }
+  }
+
+  Future<void> _deleteWatchlist() async {
+    try {
+      // Delete review if it exists
+      if (_reviewId != null) {
+        await Review.deleteReview(_reviewId!);
+      }
+
+      // Delete watchlist
+      await Watchlist.deleteWatchlist(widget.watchlist.id);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Watchlist deleted successfully')),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete watchlist: $e')),
       );
     }
   }
@@ -218,6 +243,16 @@ class _EditWatchlistPageState extends State<EditWatchlistPage> {
                           ),
                         ),
                         const SizedBox(height: 30),
+                        const Divider(),
+                        // Delete Button
+                        TextButton.icon(
+                          onPressed: _deleteWatchlist,
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          label: const Text(
+                            "Hapus Movie dalam Watchlist",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
                       ],
                     ),
                   ),

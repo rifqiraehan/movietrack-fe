@@ -6,24 +6,36 @@ import 'package:movietrack/pages/user/edit_watchlist_page.dart';
 import 'package:movietrack/pages/user/review_movie_page.dart';
 import 'package:movietrack/list_widget/recs_card.dart';
 
-class MovieDetailPage extends StatelessWidget {
+class MovieDetailPage extends StatefulWidget {
   final int movieId;
 
   const MovieDetailPage({Key? key, required this.movieId}) : super(key: key);
 
+  @override
+  _MovieDetailPageState createState() => _MovieDetailPageState();
+}
+
+class _MovieDetailPageState extends State<MovieDetailPage> {
   Future<Watchlist?> _fetchWatchlistEntry() async {
     final watchlists = await Watchlist.fetchWatchlist(); // Fetch all watchlists
     try {
-      return watchlists.firstWhere((watchlist) => watchlist.movieId == movieId);
+      final watchlist = watchlists.firstWhere((watchlist) => watchlist.movieId == widget.movieId);
+      print('Watchlist found: $watchlist');
+      return watchlist;
     } catch (e) {
+      print('Watchlist not found for movieId: ${widget.movieId}');
       return null;
     }
+  }
+
+  Future<void> _refreshWatchlist() async {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    appBar: AppBar(
+      appBar: AppBar(
         title: const Text(
           'MovieTrack',
           style: TextStyle(
@@ -46,15 +58,18 @@ class MovieDetailPage extends StatelessWidget {
           } else {
             final watchlist = snapshot.data;
             return FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => watchlist == null
-                        ? AddWatchlistPage(movieId: movieId)
+                        ? AddWatchlistPage(movieId: widget.movieId)
                         : EditWatchlistPage(watchlist: watchlist),
                   ),
                 );
+                if (result == true) {
+                  _refreshWatchlist(); // Refresh the state to update the FAB
+                }
               },
               backgroundColor: const Color(0xFF4F378B),
               child: Icon(watchlist == null ? Icons.add : Icons.edit, color: Colors.white),
@@ -63,7 +78,7 @@ class MovieDetailPage extends StatelessWidget {
         },
       ),
       body: FutureBuilder<Movie>(
-        future: Movie.fetchDetails(movieId),
+        future: Movie.fetchDetails(widget.movieId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -140,8 +155,7 @@ class MovieDetailPage extends StatelessWidget {
                                                   ? '${word.substring(0, 8)}.'
                                                   : word)
                                               .take(2)
-                                              .join('\n') ??
-                                          'N/A',
+                                              .join('\n') ?? 'N/A',
                                       style: const TextStyle(fontSize: 16),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 2,
@@ -166,8 +180,7 @@ class MovieDetailPage extends StatelessWidget {
                                           fontWeight: FontWeight.bold),
                                     ),
                                     Text(
-                                      movie.releaseDate?.substring(0, 4) ??
-                                          'N/A',
+                                      movie.releaseDate?.substring(0, 4) ?? 'N/A',
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                     const SizedBox(height: 8),
@@ -283,7 +296,7 @@ class MovieDetailPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: FutureBuilder<List<Movie>>(
-                        future: Movie.fetchRecsID(movieId),
+                        future: Movie.fetchRecsID(widget.movieId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {

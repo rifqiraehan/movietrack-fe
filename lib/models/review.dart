@@ -107,11 +107,13 @@ class Review {
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final response = await http.get(Uri.parse("$baseUrl/movies/$movieId/reviews"));
+      final response =
+          await http.get(Uri.parse("$baseUrl/movies/$movieId/reviews"));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        if (responseData['success'] == false && responseData['message'] == 'No reviews found for this movie') {
+        if (responseData['success'] == false &&
+            responseData['message'] == 'No reviews found for this movie') {
           logger.i("No reviews found for movie ID: $movieId");
           return [];
         }
@@ -134,11 +136,13 @@ class Review {
     const String baseUrl = AuthService.baseUrl;
 
     try {
-      final response = await http.get(Uri.parse("$baseUrl/movies/$movieId/reviews/latest"));
+      final response =
+          await http.get(Uri.parse("$baseUrl/movies/$movieId/reviews/latest"));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        if (responseData['success'] == false && responseData['message'] == 'No reviews found for this movie') {
+        if (responseData['success'] == false &&
+            responseData['message'] == 'No reviews found for this movie') {
           logger.i("No reviews found for movie ID: $movieId");
           return [];
         }
@@ -214,7 +218,7 @@ class Review {
     }
   }
 
-    static Future<void> editReview(int watchlistId, String reviewText) async {
+  static Future<void> editReview(int reviewId, String reviewText) async {
     final Logger logger = Logger();
     const String baseUrl = AuthService.baseUrl;
 
@@ -227,7 +231,7 @@ class Review {
       });
 
       final response = await http.patch(
-        Uri.parse("$baseUrl/reviews/$watchlistId"),
+        Uri.parse("$baseUrl/reviews/$reviewId"),
         headers: {
           'Authorization': '$token',
           'Content-Type': 'application/json',
@@ -240,9 +244,12 @@ class Review {
       logger.i("Response status: ${response.statusCode}");
       logger.i("Response body: ${response.body}");
 
-      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
+      if (response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 204) {
         final responseData = jsonDecode(response.body);
-        if (responseData is Map<String, dynamic> && responseData['success'] == true) {
+        if (responseData is Map<String, dynamic> &&
+            responseData['data'] is Map<String, dynamic>) {
           logger.i("Review edited successfully");
         } else {
           logger.e("Unexpected response format: ${response.body}");
@@ -255,6 +262,37 @@ class Review {
     } catch (e) {
       logger.e("Exception occurred while editing review: $e");
       throw Exception("Failed to edit review");
+    }
+  }
+
+  static Future<void> deleteReview(int reviewId) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final sessionManager = SessionManager();
+      final token = await sessionManager.getToken();
+
+      final response = await http.delete(
+        Uri.parse("$baseUrl/reviews/$reviewId"),
+        headers: {
+          'Authorization': '$token',
+        },
+      );
+
+      logger.i("Request to delete review: ${response.request?.url}");
+      logger.i("Response status: ${response.statusCode}");
+      logger.i("Response body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        logger.i("Review deleted successfully");
+      } else {
+        logger.e("Failed to delete review: ${response.body}");
+        throw Exception("Failed to delete review");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while deleting review: $e");
+      throw Exception("Failed to delete review");
     }
   }
 }

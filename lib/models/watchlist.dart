@@ -57,7 +57,13 @@ class Watchlist {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body)['data'];
-        return data.map((e) => Watchlist.fromJson(e)).toList();
+        List<Watchlist> watchlists = [];
+        for (var status in data) {
+          for (var movie in status['movies']) {
+            watchlists.add(Watchlist.fromJson(movie));
+          }
+        }
+        return watchlists;
       } else {
         logger.e("Failed to fetch watchlist: ${response.body}");
         throw Exception("Failed to fetch watchlist");
@@ -253,4 +259,34 @@ class Watchlist {
       throw Exception("Failed to edit watchlist");
     }
   }
+
+  // delete watchlist
+  static Future<void> deleteWatchlist(int id) async {
+    final Logger logger = Logger();
+    const String baseUrl = AuthService.baseUrl;
+
+    try {
+      final sessionManager = SessionManager();
+      final token = await sessionManager.getToken();
+
+      final response = await http.delete(
+        Uri.parse("$baseUrl/watchlists/$id"),
+        headers: {
+          'Authorization': '$token',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        logger.i("Successfully deleted watchlist");
+      } else {
+        logger.e("Failed to delete watchlist: ${response.body}");
+        throw Exception("Failed to delete watchlist");
+      }
+    } catch (e) {
+      logger.e("Exception occurred while deleting watchlist: $e");
+      throw Exception("Failed to delete watchlist");
+    }
+  }
+
+
 }
