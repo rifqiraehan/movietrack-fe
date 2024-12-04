@@ -27,29 +27,29 @@ class _MyListPageState extends State<MyListPage>
   }
 
   Future<void> _fetchWatchlists() async {
-  setState(() {
-    _isLoading = true;
-  });
+    setState(() {
+      _isLoading = true;
+    });
 
-  _watchingList = await _fetchMoviesByStatus(1); // 'Watching'
-  _completedList = await _fetchMoviesByStatus(2); // 'Completed'
-  _droppedList = await _fetchMoviesByStatus(3); // 'Dropped'
-  _plannedList = await _fetchMoviesByStatus(4); // 'Planned'
+    _watchingList = await _fetchMoviesByStatus(1); // 'Watching'
+    _completedList = await _fetchMoviesByStatus(2); // 'Completed'
+    _droppedList = await _fetchMoviesByStatus(3); // 'Dropped'
+    _plannedList = await _fetchMoviesByStatus(4); // 'Planned'
 
-  setState(() {
-    _isLoading = false;
-  });
-}
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   Future<List<Map<String, dynamic>>> _fetchMoviesByStatus(int statusId) async {
-  List<Watchlist> watchlist = await Watchlist.fetchWatchlistByStatus(statusId);
-  List<Map<String, dynamic>> moviesWithWatchlist = [];
-  for (var item in watchlist) {
-    Movie movie = await Movie.fetchDetails(item.movieId);
-    moviesWithWatchlist.add({'movie': movie, 'watchlist': item});
+    List<Watchlist> watchlist = await Watchlist.fetchWatchlistByStatus(statusId);
+    List<Map<String, dynamic>> moviesWithWatchlist = [];
+    for (var item in watchlist) {
+      Movie movie = await Movie.fetchDetails(item.movieId);
+      moviesWithWatchlist.add({'movie': movie, 'watchlist': item});
+    }
+    return moviesWithWatchlist;
   }
-  return moviesWithWatchlist;
-}
 
   @override
   void dispose() {
@@ -101,29 +101,32 @@ class _MyListPageState extends State<MyListPage>
   }
 
   // Reusable method to build the movie list view
-    Widget _buildMovieListView(List<Map<String, dynamic>> moviesWithWatchlist) {
+  Widget _buildMovieListView(List<Map<String, dynamic>> moviesWithWatchlist) {
     if (moviesWithWatchlist.isEmpty) {
       return const Center(
         child: Text('Tidak ada watchlist pada status ini'),
       );
     }
-    return ListView.separated(
-      itemCount: moviesWithWatchlist.length,
-      separatorBuilder: (BuildContext context, int index) {
-        return const Divider(height: 1);
-      },
-      itemBuilder: (BuildContext context, int index) {
-        final movie = moviesWithWatchlist[index]['movie'] as Movie;
-        final watchlist = moviesWithWatchlist[index]['watchlist'] as Watchlist;
-        return MovieWatchlistCard(
-          watchlist: watchlist,
-          id: movie.id,
-          title: movie.title,
-          year: int.parse(movie.releaseDate?.substring(0, 4) ?? '0'),
-          posterPath: movie.posterPath ?? 'https://via.placeholder.com/500',
-          onRefresh: _fetchWatchlists, // Pass the callback to refresh data
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: _fetchWatchlists,
+      child: ListView.separated(
+        itemCount: moviesWithWatchlist.length,
+        separatorBuilder: (BuildContext context, int index) {
+          return const Divider(height: 1);
+        },
+        itemBuilder: (BuildContext context, int index) {
+          final movie = moviesWithWatchlist[index]['movie'] as Movie;
+          final watchlist = moviesWithWatchlist[index]['watchlist'] as Watchlist;
+          return MovieWatchlistCard(
+            watchlist: watchlist,
+            id: movie.id,
+            title: movie.title,
+            year: int.parse(movie.releaseDate?.substring(0, 4) ?? '0'),
+            posterPath: movie.posterPath ?? 'https://via.placeholder.com/500',
+            onRefresh: _fetchWatchlists, // Pass the callback to refresh data
+          );
+        },
+      ),
     );
   }
 }

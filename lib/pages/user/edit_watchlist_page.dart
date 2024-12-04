@@ -20,15 +20,22 @@ class _EditWatchlistPageState extends State<EditWatchlistPage> {
   int _selectedScore = 1;
   String _movieTitle = '';
   int? _reviewId;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchMovieDetails();
     _selectedStatus = widget.watchlist.statusId;
     _selectedScore = widget.watchlist.score;
-    _reviewController.text = ''; // Fetch and set the review text if available
-    _fetchReview();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    await _fetchMovieDetails();
+    await _fetchReview();
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _fetchReview() async {
@@ -120,146 +127,148 @@ class _EditWatchlistPageState extends State<EditWatchlistPage> {
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: SafeArea(
-          child: Column(
-            children: [
-              // Custom AppBar
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Color(0xFFBDBDBD), width: 1),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
                   children: [
-                    // Icon Close (X)
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.black),
-                      onPressed: _closePage,
-                    ),
-                    // Title
-                    const Text(
-                      "Edit Watchlist",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
+                    // Custom AppBar
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Color(0xFFBDBDBD), width: 1),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Icon Close (X)
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.black),
+                            onPressed: _closePage,
+                          ),
+                          // Title
+                          const Text(
+                            "Edit Watchlist",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          // Save Button
+                          InkWell(
+                            onTap: _saveWatchlist,
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                "Save",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF4F378B),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    // Save Button
-                    InkWell(
-                      onTap: _saveWatchlist,
-                      borderRadius: BorderRadius.circular(20),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Save",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF4F378B),
-                            fontWeight: FontWeight.bold,
+                    // Form and other content
+                    Expanded(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(height: 20),
+                              // Movie Title
+                              Text(
+                                _movieTitle,
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 20),
+                              // Status Section
+                              const Text(
+                                "Status",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 10,
+                                children: [
+                                  _buildStatusBadge(1, "Watching"),
+                                  _buildStatusBadge(2, "Completed"),
+                                  _buildStatusBadge(3, "Dropped"),
+                                  _buildStatusBadge(4, "Planned"),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              // Score Section
+                              const Text(
+                                "Score",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 10),
+                              DropdownButton<int>(
+                                value: (_selectedScore >= 1 && _selectedScore <= 10)
+                                    ? _selectedScore
+                                    : 1,
+                                items:
+                                    List.generate(10, (index) => (index + 1).toInt())
+                                        .map((score) => DropdownMenuItem(
+                                              value: score,
+                                              child: Text(score.toString()),
+                                            ))
+                                        .toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      _selectedScore = value;
+                                    });
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              // Review Section
+                              const Text(
+                                "Review",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: _reviewController,
+                                maxLines: 5,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  hintText: "Write your review here...",
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                              const Divider(),
+                              // Delete Button
+                              TextButton.icon(
+                                onPressed: _deleteWatchlist,
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                label: const Text(
+                                  "Hapus Movie dalam Watchlist",
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              // Form and other content
-              Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 20),
-                        // Movie Title
-                        Text(
-                          _movieTitle,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        // Status Section
-                        const Text(
-                          "Status",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 10,
-                          children: [
-                            _buildStatusBadge(1, "Watching"),
-                            _buildStatusBadge(2, "Completed"),
-                            _buildStatusBadge(3, "Dropped"),
-                            _buildStatusBadge(4, "Planned"),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        // Score Section
-                        const Text(
-                          "Score",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        DropdownButton<int>(
-                          value: (_selectedScore >= 1 && _selectedScore <= 10)
-                              ? _selectedScore
-                              : 1,
-                          items:
-                              List.generate(10, (index) => (index + 1).toInt())
-                                  .map((score) => DropdownMenuItem(
-                                        value: score,
-                                        child: Text(score.toString()),
-                                      ))
-                                  .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _selectedScore = value;
-                              });
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        // Review Section
-                        const Text(
-                          "Review",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: _reviewController,
-                          maxLines: 5,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Write your review here...",
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        const Divider(),
-                        // Delete Button
-                        TextButton.icon(
-                          onPressed: _deleteWatchlist,
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          label: const Text(
-                            "Hapus Movie dalam Watchlist",
-                            style: TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
