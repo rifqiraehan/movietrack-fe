@@ -21,9 +21,15 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _userProfile = _loadUserProfile();
-    _watchlistCounts = Watchlist.fetchWatchlistCount();
-    _mostFavoriteGenre = Watchlist.fetchMostFavoriteGenre();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _userProfile = _loadUserProfile();
+      _watchlistCounts = Watchlist.fetchWatchlistCount();
+      _mostFavoriteGenre = Watchlist.fetchMostFavoriteGenre();
+    });
   }
 
   Future<User?> _loadUserProfile() async {
@@ -62,8 +68,10 @@ class _ProfilePageState extends State<ProfilePage> {
             return const Center(child: Text("Failed to load profile"));
           } else if (snapshot.hasData) {
             final user = snapshot.data!;
-            return Center(
+            return RefreshIndicator(
+              onRefresh: _loadData,
               child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
